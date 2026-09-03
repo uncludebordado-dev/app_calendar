@@ -96,7 +96,7 @@ export function SlotForm({ mode, slotId, defaultValues, bookedCount = 0 }: Props
         <Button type="submit" loading={pending}>
           {mode === "create" ? "Crear franja" : "Guardar cambios"}
         </Button>
-        <ButtonLink href="/admin" variant="ghost">
+        <ButtonLink href="/admin/franjas" variant="ghost">
           Cancelar
         </ButtonLink>
       </div>

@@ -25,5 +25,15 @@ export default async function CompletarPerfilPage({
     (typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "") ||
     (typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "");
 
-  return <CompleteProfileForm next={next} defaultName={defaultName} />;
+  const target = next && next.startsWith("/") ? next : ROUTES.calendario;
+  const withWelcome = `${target}${target.includes("?") ? "&" : "?"}bienvenida=1`;
+
+  return (
+    <CompleteProfileForm
+      next={withWelcome}
+      defaultName={defaultName}
+      defaultPhone={profile?.phone_e164 ?? ""}
+      defaultBirthDate={profile?.birth_date ?? ""}
+    />
+  );
 }

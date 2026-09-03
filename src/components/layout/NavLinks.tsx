@@ -7,6 +7,7 @@ import { ROUTES } from "@/lib/constants";
 const links = [
   { href: ROUTES.calendario, label: "Calendario" },
   { href: ROUTES.misReservas, label: "Mis reservas" },
+  { href: ROUTES.miPerfil, label: "Mi perfil" },
 ];
 
 export function NavLinks({ isAdmin }: { isAdmin: boolean }) {

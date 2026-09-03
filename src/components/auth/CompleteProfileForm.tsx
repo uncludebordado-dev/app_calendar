@@ -14,9 +14,15 @@ const initial: ActionResult = { ok: false };
 export function CompleteProfileForm({
   next,
   defaultName = "",
+  defaultPhone = "",
+  defaultBirthDate = "",
+  mode = "complete",
 }: {
   next?: string;
   defaultName?: string;
+  defaultPhone?: string;
+  defaultBirthDate?: string;
+  mode?: "complete" | "edit";
 }) {
   const [state, formAction, pending] = useActionState(completeProfileAction, initial);
   const {
@@ -26,7 +32,11 @@ export function CompleteProfileForm({
   } = useForm<CompleteProfileInput>({
     resolver: zodResolver(completeProfileSchema),
     mode: "onTouched",
-    defaultValues: { fullName: defaultName },
+    defaultValues: {
+      fullName: defaultName,
+      phone: defaultPhone,
+      birthDate: defaultBirthDate,
+    },
   });
 
   function onValid(_: CompleteProfileInput, event?: React.BaseSyntheticEvent) {
@@ -37,9 +47,13 @@ export function CompleteProfileForm({
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h1 className="text-xl font-semibold">Un último paso</h1>
+        <h1 className="text-xl font-semibold">
+          {mode === "edit" ? "Mi perfil" : "Un último paso"}
+        </h1>
         <p className="mt-1 text-sm text-piedra">
-          Necesitamos tu nombre y teléfono para poder reservarte un lugar.
+          {mode === "edit"
+            ? "Actualizá tus datos cuando quieras."
+            : "Necesitamos tu nombre y teléfono para poder reservarte un lugar."}
         </p>
       </div>
 
@@ -62,11 +76,18 @@ export function CompleteProfileForm({
           error={errors.phone?.message}
           {...register("phone")}
         />
+        <Field
+          label="Fecha de nacimiento"
+          type="date"
+          hint="Opcional. La usamos para saludarte en tu cumpleaños 🎉"
+          error={errors.birthDate?.message}
+          {...register("birthDate")}
+        />
 
         {state.error && <Alert tone="error">{state.error}</Alert>}
 
         <Button type="submit" fullWidth size="lg" loading={pending}>
-          Guardar y continuar
+          {mode === "edit" ? "Guardar cambios" : "Guardar y continuar"}
         </Button>
       </form>
     </div>

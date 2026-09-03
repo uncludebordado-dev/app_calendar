@@ -35,5 +35,6 @@ export const ROUTES = {
   completarPerfil: "/completar-perfil",
   calendario: "/calendario",
   misReservas: "/mis-reservas",
+  miPerfil: "/mi-perfil",
   admin: "/admin",
 } as const;

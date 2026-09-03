@@ -43,7 +43,7 @@ export default async function AdminReservasPage({
           <h1 className="text-xl font-semibold">Inscriptas por clase</h1>
           <p className="mt-1 text-sm text-piedra">Próximos 90 días. Datos de contacto visibles sólo acá.</p>
         </div>
-        <Link href="/admin" className="text-sm text-piedra underline">
+        <Link href="/admin/franjas" className="text-sm text-piedra underline">
           ← Franjas
         </Link>
       </div>

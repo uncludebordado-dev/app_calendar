@@ -18,10 +18,10 @@ export const metadata: Metadata = { title: "Calendario — un clu de bordado" };
 export default async function CalendarioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string }>;
+  searchParams: Promise<{ mes?: string; bienvenida?: string }>;
 }) {
   const profile = await requireCompleteProfile();
-  const { mes } = await searchParams;
+  const { mes, bienvenida } = await searchParams;
 
   const today = todayKey();
   const { year, month } = parseMonthParam(mes, today);
@@ -55,6 +55,12 @@ export default async function CalendarioPage({
 
   return (
     <div className="space-y-5">
+      {bienvenida && (
+        <Alert tone="success" title={`¡Bienvenida al clu, ${profile.full_name.split(" ")[0]}! 🎉`}>
+          Tu cuenta quedó registrada. Ya podés reservar tu lugar en la próxima clase.
+        </Alert>
+      )}
+
       <div>
         <h1 className="text-xl font-semibold">Reservá tu clase</h1>
         <p className="mt-1 text-sm text-piedra">

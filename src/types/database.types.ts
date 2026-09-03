@@ -16,8 +16,69 @@ export type Profile = {
   role: ProfileRole;
   strikes: number;
   blocked: boolean;
+  birth_date: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type PaymentMethod = "efectivo" | "transferencia" | "mercadopago" | "otro";
+
+export type Payment = {
+  id: string;
+  user_id: string;
+  slot_id: string | null;
+  amount: number | null;
+  method: PaymentMethod;
+  paid_on: string;
+  note: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type MonthSummaryRow = {
+  user_id: string;
+  full_name: string;
+  phone_e164: string;
+  email: string;
+  birth_date: string | null;
+  strikes: number;
+  blocked: boolean;
+  reserved_count: number;
+  attended_count: number;
+  noshow_count: number;
+  cancelled_count: number;
+  paid_total: number;
+  payments_count: number;
+  last_payment_on: string | null;
+};
+
+export type MonthTotals = {
+  classes_count: number;
+  reservations_count: number;
+  attended_count: number;
+  noshow_count: number;
+  income_total: number;
+  active_students: number;
+};
+
+export type UpcomingBirthday = {
+  user_id: string;
+  full_name: string;
+  phone_e164: string;
+  birth_date: string;
+  next_birthday: string;
+  turning_age: number;
+  days_until: number;
+};
+
+export type StudentPaymentRow = {
+  id: string;
+  amount: number | null;
+  method: PaymentMethod;
+  paid_on: string;
+  note: string | null;
+  slot_id: string | null;
+  class_date: string | null;
 };
 
 export type AvailabilitySlot = {
@@ -131,6 +192,12 @@ export type Database = {
         Update: { bucket?: string; subject?: string };
         Relationships: [];
       };
+      payments: {
+        Row: Payment;
+        Insert: InsertOf<Payment, "user_id">;
+        Update: Partial<Payment>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -150,6 +217,34 @@ export type Database = {
       admin_list_students: {
         Args: Record<string, never>;
         Returns: AdminStudentRow[];
+      };
+      record_payment: {
+        Args: {
+          p_user_id: string;
+          p_slot_id: string | null;
+          p_amount: number | null;
+          p_method: string;
+          p_paid_on: string | null;
+          p_note: string | null;
+        };
+        Returns: Payment;
+      };
+      delete_payment: { Args: { p_payment_id: string }; Returns: undefined };
+      admin_month_summary: {
+        Args: { p_from: string; p_to: string };
+        Returns: MonthSummaryRow[];
+      };
+      admin_month_totals: {
+        Args: { p_from: string; p_to: string };
+        Returns: MonthTotals[];
+      };
+      admin_upcoming_birthdays: {
+        Args: { p_days: number };
+        Returns: UpcomingBirthday[];
+      };
+      admin_student_payments: {
+        Args: { p_user_id: string };
+        Returns: StudentPaymentRow[];
       };
     };
     Enums: Record<string, never>;

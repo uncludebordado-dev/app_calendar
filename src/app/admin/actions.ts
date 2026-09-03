@@ -59,8 +59,9 @@ export async function createSlotAction(
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/franjas");
   revalidatePath("/calendario");
-  redirect("/admin");
+  redirect("/admin/franjas");
 }
 
 // ---------------------------------------------------------------------------
@@ -104,8 +105,9 @@ export async function updateSlotAction(
   }
 
   revalidatePath("/admin");
+  revalidatePath("/admin/franjas");
   revalidatePath("/calendario");
-  redirect("/admin");
+  redirect("/admin/franjas");
 }
 
 // ---------------------------------------------------------------------------
@@ -129,8 +131,9 @@ export async function deleteSlotAction(formData: FormData): Promise<void> {
 
   await supabase.from("availability_slots").delete().eq("id", id);
   revalidatePath("/admin");
+  revalidatePath("/admin/franjas");
   revalidatePath("/calendario");
-  redirect("/admin");
+  redirect("/admin/franjas");
 }
 
 // ---------------------------------------------------------------------------
@@ -145,6 +148,7 @@ export async function togglePublishAction(formData: FormData): Promise<void> {
   const supabase = await createClient();
   await supabase.from("availability_slots").update({ is_published: next }).eq("id", id);
   revalidatePath("/admin");
+  revalidatePath("/admin/franjas");
   revalidatePath("/calendario");
 }
 
@@ -169,6 +173,67 @@ export async function resetStrikesAction(formData: FormData): Promise<void> {
 
   const supabase = await createClient();
   await supabase.rpc("reset_strikes", { p_user_id: userId });
+  revalidatePath("/admin/alumnas");
+}
+
+// ---------------------------------------------------------------------------
+// Pagos
+// ---------------------------------------------------------------------------
+const METHODS = ["efectivo", "transferencia", "mercadopago", "otro"] as const;
+
+export async function recordPaymentAction(
+  _prev: AdminActionResult,
+  formData: FormData,
+): Promise<AdminActionResult> {
+  await requireAdmin();
+
+  const userId = String(formData.get("userId") ?? "");
+  if (!uuidRe.test(userId)) return { ok: false, error: "Alumna inválida." };
+
+  const rawAmount = String(formData.get("amount") ?? "").replace(",", ".").trim();
+  const amount = rawAmount === "" ? null : Number(rawAmount);
+  if (amount !== null && (Number.isNaN(amount) || amount < 0 || amount > 10_000_000)) {
+    return { ok: false, error: "Monto inválido." };
+  }
+
+  const method = String(formData.get("method") ?? "efectivo");
+  if (!METHODS.includes(method as (typeof METHODS)[number])) {
+    return { ok: false, error: "Medio de pago inválido." };
+  }
+
+  const paidOn = String(formData.get("paidOn") ?? "").trim() || null;
+  if (paidOn && !/^\d{4}-\d{2}-\d{2}$/.test(paidOn)) {
+    return { ok: false, error: "Fecha inválida." };
+  }
+
+  const slotId = String(formData.get("slotId") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim().slice(0, 300) || null;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("record_payment", {
+    p_user_id: userId,
+    p_slot_id: slotId && uuidRe.test(slotId) ? slotId : null,
+    p_amount: amount,
+    p_method: method,
+    p_paid_on: paidOn,
+    p_note: note,
+  });
+
+  if (error) return { ok: false, error: rpcErrorToMessage(error.message) };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/alumnas");
+  return { ok: true };
+}
+
+export async function deletePaymentAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const paymentId = String(formData.get("paymentId") ?? "");
+  if (!uuidRe.test(paymentId)) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("delete_payment", { p_payment_id: paymentId });
+  revalidatePath("/admin");
   revalidatePath("/admin/alumnas");
 }
 

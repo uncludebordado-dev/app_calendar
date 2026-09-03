@@ -35,7 +35,7 @@ export default async function EditarFranjaPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/admin" className="text-sm text-piedra underline">
+      <Link href="/admin/franjas" className="text-sm text-piedra underline">
         ← Volver
       </Link>
 

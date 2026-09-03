@@ -65,12 +65,37 @@ export const loginSchema = z
   })
   .strict();
 
+/** Fecha de nacimiento: opcional, formato YYYY-MM-DD, entre 5 y 100 años. */
+export const birthDateSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => v ?? "")
+  .superRefine((value, ctx) => {
+    if (!value) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Fecha inválida" });
+      return;
+    }
+    const year = Number(value.slice(0, 4));
+    const nowYear = new Date().getUTCFullYear();
+    if (value > new Date().toISOString().slice(0, 10)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "No puede ser en el futuro" });
+    } else if (nowYear - year > 100 || nowYear - year < 5) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Revisá el año" });
+    }
+  })
+  .transform((v) => (v ? v : null));
+
 export const completeProfileSchema = z
   .object({
     fullName: fullNameSchema,
     phone: phoneSchema,
+    birthDate: birthDateSchema,
   })
   .strict();
+
+export const editProfileSchema = completeProfileSchema;
 
 export type SignupInput = z.input<typeof signupSchema>;
 export type SignupValues = z.output<typeof signupSchema>;

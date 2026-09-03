@@ -18,6 +18,10 @@ function safeNext(next: FormDataEntryValue | null): string {
   return value.startsWith("/") && !value.startsWith("//") ? value : ROUTES.calendario;
 }
 
+function withWelcome(path: string): string {
+  return `${path}${path.includes("?") ? "&" : "?"}bienvenida=1`;
+}
+
 // ---------------------------------------------------------------------------
 // Registro con email + contraseña
 // ---------------------------------------------------------------------------
@@ -61,7 +65,7 @@ export async function signUpAction(_prev: ActionResult, formData: FormData): Pro
     return { ok: true, needsEmailConfirmation: true };
   }
 
-  redirect(safeNext(formData.get("next")));
+  redirect(withWelcome(safeNext(formData.get("next"))));
 }
 
 // ---------------------------------------------------------------------------
@@ -102,6 +106,7 @@ export async function completeProfileAction(
   const parsed = completeProfileSchema.safeParse({
     fullName: formData.get("fullName"),
     phone: formData.get("phone"),
+    birthDate: formData.get("birthDate") ?? "",
   });
 
   if (!parsed.success) {
@@ -119,7 +124,11 @@ export async function completeProfileAction(
 
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name: parsed.data.fullName, phone_e164: parsed.data.phone })
+    .update({
+      full_name: parsed.data.fullName,
+      phone_e164: parsed.data.phone,
+      birth_date: parsed.data.birthDate,
+    })
     .eq("id", user.id);
 
   if (error) {
