@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 
-export function GoogleButton({ next }: { next?: string }) {
+export function GoogleButton() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,12 +12,11 @@ export function GoogleButton({ next }: { next?: string }) {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback${
-      next ? `?next=${encodeURIComponent(next)}` : ""
-    }`;
+    // redirectTo SIN query string: si le agregamos `?next=` Supabase rompe el
+    // parámetro `code` al reenviar. El destino post-login lo resuelve el layout.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) {
       setError("No pudimos conectar con Google. Probá de nuevo.");

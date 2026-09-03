@@ -14,7 +14,7 @@ import { GOOGLE_AUTH_ENABLED, ROUTES } from "@/lib/constants";
 
 const initial: ActionResult = { ok: false };
 
-export function LoginForm({ next, authError }: { next?: string; authError?: boolean }) {
+export function LoginForm({ next, authError }: { next?: string; authError?: string }) {
   const [state, formAction, pending] = useActionState(signInAction, initial);
   const {
     register,
@@ -36,7 +36,7 @@ export function LoginForm({ next, authError }: { next?: string; authError?: bool
 
       {GOOGLE_AUTH_ENABLED && (
         <>
-          <GoogleButton next={next} />
+          <GoogleButton />
           <div className="flex items-center gap-3 text-xs text-piedra-soft">
             <span className="h-px flex-1 bg-lino" />o con tu email
             <span className="h-px flex-1 bg-lino" />
@@ -65,7 +65,10 @@ export function LoginForm({ next, authError }: { next?: string; authError?: bool
 
         {(state.error || authError) && (
           <Alert tone="error">
-            {state.error ?? "No pudimos iniciar sesión. Probá de nuevo."}
+            {state.error ??
+              (authError && authError !== "auth"
+                ? `No pudimos iniciar sesión: ${authError}`
+                : "No pudimos iniciar sesión. Probá de nuevo.")}
           </Alert>
         )}
 

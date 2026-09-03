@@ -48,7 +48,7 @@ export function SignupForm({ next }: { next?: string }) {
 
       {GOOGLE_AUTH_ENABLED && (
         <>
-          <GoogleButton next={next} />
+          <GoogleButton />
           <div className="flex items-center gap-3 text-xs text-piedra-soft">
             <span className="h-px flex-1 bg-lino" />o con tu email
             <span className="h-px flex-1 bg-lino" />

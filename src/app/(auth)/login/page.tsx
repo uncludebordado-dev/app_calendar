@@ -17,5 +17,5 @@ export default async function LoginPage({
     redirect(next && next.startsWith("/") ? next : ROUTES.calendario);
   }
 
-  return <LoginForm next={next} authError={error === "auth"} />;
+  return <LoginForm next={next} authError={error} />;
 }
