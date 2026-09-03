@@ -10,7 +10,7 @@ import { Field } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { GoogleButton } from "./GoogleButton";
-import { ROUTES } from "@/lib/constants";
+import { GOOGLE_AUTH_ENABLED, ROUTES } from "@/lib/constants";
 
 const initial: ActionResult = { ok: false };
 
@@ -46,11 +46,15 @@ export function SignupForm({ next }: { next?: string }) {
         <p className="mt-1 text-sm text-piedra">Creá tu cuenta para reservar tu lugar.</p>
       </div>
 
-      <GoogleButton next={next} />
-
-      <div className="flex items-center gap-3 text-xs text-piedra-soft">
-        <span className="h-px flex-1 bg-lino" />o con tu email<span className="h-px flex-1 bg-lino" />
-      </div>
+      {GOOGLE_AUTH_ENABLED && (
+        <>
+          <GoogleButton next={next} />
+          <div className="flex items-center gap-3 text-xs text-piedra-soft">
+            <span className="h-px flex-1 bg-lino" />o con tu email
+            <span className="h-px flex-1 bg-lino" />
+          </div>
+        </>
+      )}
 
       <form onSubmit={handleSubmit(onValid)} noValidate className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}

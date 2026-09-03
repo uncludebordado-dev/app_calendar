@@ -13,6 +13,12 @@ export const STRIKE_BLOCK_THRESHOLD = 3;
 
 export const INSTAGRAM_URL = "https://instagram.com/uncludebordado";
 
+/**
+ * Mostrar el botón "Continuar con Google". Se activa recién cuando Google OAuth
+ * está configurado en Supabase (poner NEXT_PUBLIC_GOOGLE_ENABLED=true en Vercel).
+ */
+export const GOOGLE_AUTH_ENABLED = process.env.NEXT_PUBLIC_GOOGLE_ENABLED === "true";
+
 export const ADMIN_EMAIL = "uncludebordado@gmail.com";
 
 /** Rate limiting (ventanas). */
