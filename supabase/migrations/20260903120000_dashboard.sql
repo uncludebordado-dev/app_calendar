@@ -198,6 +198,7 @@ grant execute on function public.admin_month_summary(date, date) to authenticate
 -- -----------------------------------------------------------------------------
 -- admin_month_totals()  — números globales del mes
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_month_totals(date, date);
 create or replace function public.admin_month_totals(p_from date, p_to date)
 returns table (
   classes_count      bigint,

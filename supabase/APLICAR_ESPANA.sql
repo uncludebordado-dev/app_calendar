@@ -1,5 +1,6 @@
 -- =============================================================================
 -- un clu de bordado — CORRER TODO ESTO en el SQL Editor de Supabase (una vez).
+-- Re-ejecutable: si ya corriste parte, volvé a correrlo entero sin problema.
 -- =============================================================================
 
 -- ==== 20260903120000_dashboard.sql ====
@@ -204,6 +205,7 @@ grant execute on function public.admin_month_summary(date, date) to authenticate
 -- -----------------------------------------------------------------------------
 -- admin_month_totals()  — números globales del mes
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_month_totals(date, date);
 create or replace function public.admin_month_totals(p_from date, p_to date)
 returns table (
   classes_count      bigint,
@@ -733,6 +735,7 @@ create trigger kit_orders_email
 -- -----------------------------------------------------------------------------
 -- admin_set_booking_status()  — marca asistencia y/o pago desde el "puntito"
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_set_booking_status(uuid, boolean, boolean, numeric, text);
 create or replace function public.admin_set_booking_status(
   p_booking_id uuid,
   p_attended   boolean,
@@ -784,6 +787,7 @@ grant execute on function public.admin_set_booking_status(uuid, boolean, boolean
 -- -----------------------------------------------------------------------------
 -- admin_students_overview()  — alumnas + sus reservas del período (para "puntitos")
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_students_overview(date, date);
 create or replace function public.admin_students_overview(p_from date, p_to date)
 returns table (
   user_id      uuid,
@@ -841,6 +845,7 @@ grant execute on function public.admin_students_overview(date, date) to authenti
 -- -----------------------------------------------------------------------------
 -- admin_month_totals()  — se agrega "alumnas nuevas del mes"; asistencia por flag
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_month_totals(date, date);
 create or replace function public.admin_month_totals(p_from date, p_to date)
 returns table (
   classes_count      bigint,
@@ -884,6 +889,7 @@ grant execute on function public.admin_month_totals(date, date) to authenticated
 -- -----------------------------------------------------------------------------
 -- admin_students_by_month()  — para el gráfico de barras (total de alumnas por mes)
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_students_by_month(integer);
 create or replace function public.admin_students_by_month(p_months integer default 12)
 returns table (ym text, new_count bigint, cumulative bigint)
 language plpgsql
@@ -937,6 +943,7 @@ create table if not exists public.birthday_notices (
 );
 alter table public.birthday_notices enable row level security;  -- sin policies: sólo funciones
 
+drop function if exists public.enqueue_birthday_month_notices();
 create or replace function public.enqueue_birthday_month_notices()
 returns integer
 language plpgsql
@@ -976,6 +983,7 @@ grant execute on function public.enqueue_birthday_month_notices() to service_rol
 -- -----------------------------------------------------------------------------
 -- birthdays_in_month()  — para marcar cumpleaños en el calendario del admin
 -- -----------------------------------------------------------------------------
+drop function if exists public.birthdays_in_month(integer, integer);
 create or replace function public.birthdays_in_month(p_year integer, p_month integer)
 returns table (day integer, full_name text)
 language sql
@@ -1002,6 +1010,7 @@ grant execute on function public.birthdays_in_month(integer, integer) to authent
 -- el cumpleaños de cada día.
 -- =============================================================================
 
+drop function if exists public.birthdays_in_month(integer, integer);
 create or replace function public.birthdays_in_month(p_year integer, p_month integer)
 returns table (day integer, full_name text)
 language sql

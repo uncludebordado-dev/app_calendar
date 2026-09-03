@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { todayKey, formatLongDate } from "@/lib/date";
 import { parseMonthParam, monthRange } from "@/lib/calendar";
 import { MonthNav } from "@/components/admin/MonthNav";
 import { BarChart } from "@/components/admin/BarChart";
+import { signOutAction } from "@/app/(auth)/actions";
 import type { MonthTotals, StudentsByMonthRow, UpcomingBirthday } from "@/types/database.types";
 
 export const metadata = { title: "Dashboard — un clu de bordado" };
@@ -49,6 +51,7 @@ export default async function AdminDashboardPage({
   }) as MonthTotals;
   const chart = ((byMonth ?? []) as StudentsByMonthRow[]).map((r) => ({ ym: r.ym, value: r.cumulative }));
   const birthdays = (bdays ?? []) as UpcomingBirthday[];
+  const ym = `${year}-${String(month + 1).padStart(2, "0")}`;
 
   return (
     <div className="space-y-5">
@@ -96,6 +99,43 @@ export default async function AdminDashboardPage({
           </ul>
         )}
       </section>
+
+      {/* Exportar */}
+      <section className="card p-4">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Exportar</h2>
+        <p className="mb-3 text-xs text-piedra">
+          Descargá las asistencias y el dinero de {" "}
+          <span className="capitalize">{formatLongDate(`${ym}-01`).split(" ").slice(-2).join(" ")}</span>{" "}
+          en una planilla (se abre con Excel).
+        </p>
+        <a
+          href={`/admin/export?mes=${ym}`}
+          className="inline-flex items-center gap-2 rounded-xl bg-ladrillo px-4 py-2.5 text-sm font-semibold text-white"
+        >
+          Descargar planilla del mes
+        </a>
+      </section>
+
+      {/* Perfil de la profesora */}
+      <section className="card p-4">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Mi perfil</h2>
+        <p className="mb-3 text-xs text-piedra">Editá tus datos, notificaciones, PIN y tema.</p>
+        <Link
+          href="/admin/perfil"
+          className="inline-flex items-center gap-2 rounded-xl border border-lino px-4 py-2.5 text-sm font-semibold text-piedra-deep hover:bg-lino-soft"
+        >
+          Editar mi perfil →
+        </Link>
+      </section>
+
+      <form action={signOutAction}>
+        <button
+          type="submit"
+          className="w-full rounded-xl border border-ladrillo px-4 py-3 text-sm font-semibold text-ladrillo-deep hover:bg-ladrillo/10"
+        >
+          Cerrar sesión
+        </button>
+      </form>
     </div>
   );
 }

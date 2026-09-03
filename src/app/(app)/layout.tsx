@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-dvh pb-24">
+    <div className="min-h-dvh pb-28">
       <AppLock />
       <AppHeader />
       <main className="mx-auto max-w-md px-4 py-5">{children}</main>

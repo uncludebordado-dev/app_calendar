@@ -4,6 +4,7 @@
 -- el cumpleaños de cada día.
 -- =============================================================================
 
+drop function if exists public.birthdays_in_month(integer, integer);
 create or replace function public.birthdays_in_month(p_year integer, p_month integer)
 returns table (day integer, full_name text)
 language sql
