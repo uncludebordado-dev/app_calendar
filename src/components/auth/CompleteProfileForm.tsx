@@ -10,6 +10,7 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { todayKey } from "@/lib/date";
 
 const initial: ActionResult = { ok: false };
 
@@ -110,7 +111,9 @@ export function CompleteProfileForm({
         <Field
           label="Fecha de nacimiento"
           type="date"
-          hint="Opcional. La usamos para saludarte en tu cumpleaños 🎉"
+          min="1980-01-01"
+          max={todayKey()}
+          hint="La usamos para saludarte en tu cumpleaños 🎉"
           error={errors.birthDate?.message}
           {...register("birthDate")}
         />

@@ -1,7 +1,7 @@
 import { SlotForm } from "@/components/admin/SlotForm";
 import { todayKey } from "@/lib/date";
 
-export default function NuevaFranjaPage() {
+export default function NuevaHorarioPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">Nueva franja</h1>

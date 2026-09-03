@@ -16,13 +16,14 @@ interface Props {
   todayKey: string;
   slotsByDay: Record<string, CalendarSlot[]>;
   canBook: boolean;
+  myBirthdayMD?: string | null; // "MM-DD"
 }
 
 function bookableCount(slots: CalendarSlot[] | undefined): number {
   return (slots ?? []).filter((s) => !s.isPast && s.spotsLeft > 0 && !s.bookedByMe).length;
 }
 
-export function CalendarView({ year, month, todayKey, slotsByDay, canBook }: Props) {
+export function CalendarView({ year, month, todayKey, slotsByDay, canBook, myBirthdayMD }: Props) {
   const router = useRouter();
   const grid = useMemo(() => buildMonthGrid(year, month), [year, month]);
 
@@ -122,6 +123,11 @@ export function CalendarView({ year, month, todayKey, slotsByDay, canBook }: Pro
                     title="Ya reservaste este día"
                     aria-hidden
                   />
+                )}
+                {cell.inMonth && myBirthdayMD && cell.dateKey.slice(5) === myBirthdayMD && (
+                  <span className="absolute left-0.5 top-0.5 text-[10px]" title="¡Tu cumpleaños!">
+                    🎂
+                  </span>
                 )}
               </button>
             );

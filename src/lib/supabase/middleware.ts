@@ -41,6 +41,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/mis-reservas") ||
     pathname.startsWith("/mi-perfil") ||
     pathname.startsWith("/chat") ||
+    pathname.startsWith("/reserva-kit") ||
     pathname.startsWith("/completar-perfil") ||
     pathname.startsWith("/admin");
 

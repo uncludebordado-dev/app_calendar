@@ -53,15 +53,19 @@ export async function createSlotAction(
 
   if (error) {
     const msg = error.code === "23505"
-      ? "Ya existe una franja ese día a esa hora."
-      : "No se pudo crear la franja.";
+      ? "Ya existe un horario ese día a esa hora."
+      : "No se pudo crear el horario.";
     return { ok: false, error: msg };
   }
 
   revalidatePath("/admin");
-  revalidatePath("/admin/franjas");
+  revalidatePath("/admin/horarios");
+  revalidatePath("/admin/calendario");
   revalidatePath("/calendario");
-  redirect("/admin/franjas");
+
+  // Desde el calendario: no redirige, se queda para seguir cargando.
+  if (formData.get("stay")) return { ok: true };
+  redirect("/admin/horarios");
 }
 
 // ---------------------------------------------------------------------------
@@ -73,7 +77,7 @@ export async function updateSlotAction(
 ): Promise<AdminActionResult> {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
-  if (!uuidRe.test(id)) return { ok: false, error: "Franja inválida." };
+  if (!uuidRe.test(id)) return { ok: false, error: "Horario inválido." };
 
   const parsed = parseSlotForm(formData);
   if (!parsed.success) {
@@ -99,15 +103,15 @@ export async function updateSlotAction(
     const msg = error.code === "23514"
       ? "El cupo no puede ser menor a las reservas ya confirmadas."
       : error.code === "23505"
-        ? "Ya existe una franja ese día a esa hora."
+        ? "Ya existe un horario ese día a esa hora."
         : "No se pudo guardar.";
     return { ok: false, error: msg };
   }
 
   revalidatePath("/admin");
-  revalidatePath("/admin/franjas");
+  revalidatePath("/admin/horarios");
   revalidatePath("/calendario");
-  redirect("/admin/franjas");
+  redirect("/admin/horarios");
 }
 
 // ---------------------------------------------------------------------------
@@ -126,14 +130,14 @@ export async function deleteSlotAction(formData: FormData): Promise<void> {
     .maybeSingle();
 
   if (slot && slot.booked_count > 0) {
-    redirect(`/admin/franjas/${id}?error=tiene_reservas`);
+    redirect(`/admin/horarios/${id}?error=tiene_reservas`);
   }
 
   await supabase.from("availability_slots").delete().eq("id", id);
   revalidatePath("/admin");
-  revalidatePath("/admin/franjas");
+  revalidatePath("/admin/horarios");
   revalidatePath("/calendario");
-  redirect("/admin/franjas");
+  redirect("/admin/horarios");
 }
 
 // ---------------------------------------------------------------------------
@@ -148,7 +152,7 @@ export async function togglePublishAction(formData: FormData): Promise<void> {
   const supabase = await createClient();
   await supabase.from("availability_slots").update({ is_published: next }).eq("id", id);
   revalidatePath("/admin");
-  revalidatePath("/admin/franjas");
+  revalidatePath("/admin/horarios");
   revalidatePath("/calendario");
 }
 
@@ -235,6 +239,40 @@ export async function deletePaymentAction(formData: FormData): Promise<void> {
   await supabase.rpc("delete_payment", { p_payment_id: paymentId });
   revalidatePath("/admin");
   revalidatePath("/admin/alumnas");
+}
+
+// ---------------------------------------------------------------------------
+// "Puntito": marcar asistencia y/o pago de una reserva
+// ---------------------------------------------------------------------------
+export async function setBookingStatusAction(input: {
+  bookingId: string;
+  attended: boolean;
+  paid: boolean;
+  amount: number | null;
+  method: string;
+}): Promise<AdminActionResult> {
+  await requireAdmin();
+  if (!uuidRe.test(input.bookingId)) return { ok: false, error: "Reserva inválida." };
+
+  const amount =
+    input.paid && input.amount != null && Number.isFinite(input.amount) && input.amount >= 0
+      ? Math.min(input.amount, 10_000_000)
+      : null;
+  const method = METHODS.includes(input.method as (typeof METHODS)[number]) ? input.method : "efectivo";
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_booking_status", {
+    p_booking_id: input.bookingId,
+    p_attended: input.attended,
+    p_paid: input.paid,
+    p_amount: amount,
+    p_method: method,
+  });
+  if (error) return { ok: false, error: rpcErrorToMessage(error.message) };
+
+  revalidatePath("/admin/alumnas");
+  revalidatePath("/admin");
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------

@@ -18,12 +18,12 @@ function tzOffset(dateKey: string): string {
   return match ? match[1] : "-03:00";
 }
 
-/** Instante absoluto de inicio de una franja. */
+/** Instante absoluto de inicio de un horario. */
 export function slotStartDate(slot: SlotTime): Date {
   return new Date(`${slot.class_date}T${slot.start_time}${tzOffset(slot.class_date)}`);
 }
 
-/** Horas (float) desde ahora hasta el inicio de la franja. Negativo si ya pasó. */
+/** Horas (float) desde ahora hasta el inicio del horario. Negativo si ya pasó. */
 export function hoursUntilSlot(slot: SlotTime): number {
   return (slotStartDate(slot).getTime() - Date.now()) / 3_600_000;
 }

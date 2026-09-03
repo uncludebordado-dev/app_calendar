@@ -70,6 +70,7 @@ export type MonthTotals = {
   noshow_count: number;
   income_total: number;
   active_students: number;
+  new_students: number;
 };
 
 export type UpcomingBirthday = {
@@ -90,6 +91,45 @@ export type StudentPaymentRow = {
   note: string | null;
   slot_id: string | null;
   class_date: string | null;
+};
+
+export type OverviewBooking = {
+  booking_id: string;
+  class_date: string;
+  start_time: string;
+  status: BookingStatus;
+  attended: boolean | null;
+  no_show: boolean | null;
+  paid: boolean;
+  amount: number | null;
+};
+
+export type StudentOverviewRow = {
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone_e164: string;
+  birth_date: string | null;
+  registered_on: string;
+  strikes: number;
+  blocked: boolean;
+  bookings: OverviewBooking[];
+};
+
+export type StudentsByMonthRow = {
+  ym: string;
+  new_count: number;
+  cumulative: number;
+};
+
+export type KitOrder = {
+  id: string;
+  user_id: string;
+  kit: "basico" | "medium" | "pro";
+  quantity: number;
+  note: string | null;
+  status: "pendiente" | "contactada" | "entregada" | "cancelada";
+  created_at: string;
 };
 
 export type AvailabilitySlot = {
@@ -220,6 +260,12 @@ export type Database = {
         Update: { body?: string };
         Relationships: [];
       };
+      kit_orders: {
+        Row: KitOrder;
+        Insert: { user_id: string; kit: string; quantity?: number; note?: string | null };
+        Update: Partial<KitOrder>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -271,6 +317,32 @@ export type Database = {
       chat_messages: {
         Args: { p_limit: number; p_before: number | null };
         Returns: ChatMessage[];
+      };
+      admin_set_booking_status: {
+        Args: {
+          p_booking_id: string;
+          p_attended: boolean;
+          p_paid: boolean;
+          p_amount: number | null;
+          p_method: string;
+        };
+        Returns: undefined;
+      };
+      admin_students_overview: {
+        Args: { p_from: string; p_to: string };
+        Returns: StudentOverviewRow[];
+      };
+      admin_students_by_month: {
+        Args: { p_months: number };
+        Returns: StudentsByMonthRow[];
+      };
+      birthdays_in_month: {
+        Args: { p_year: number; p_month: number };
+        Returns: { day: number; full_name: string }[];
+      };
+      enqueue_birthday_month_notices: {
+        Args: Record<string, never>;
+        Returns: number;
       };
     };
     Enums: Record<string, never>;

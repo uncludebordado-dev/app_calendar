@@ -5,9 +5,9 @@ import { ButtonLink } from "@/components/ui/Button";
 import { SlotRow } from "@/components/admin/SlotRow";
 import type { AvailabilitySlot } from "@/types/database.types";
 
-export const metadata = { title: "Franjas — Administración" };
+export const metadata = { title: "Horarios — Administración" };
 
-export default async function AdminFranjasPage({
+export default async function AdminHorariosPage({
   searchParams,
 }: {
   searchParams: Promise<{ ver?: string }>;
@@ -34,17 +34,17 @@ export default async function AdminFranjasPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Franjas de clase</h1>
+          <h1 className="text-xl font-semibold">Horarios de clase</h1>
           <p className="mt-1 text-sm text-piedra">
             {upcoming.length} próximas · {takenSpots}/{totalSpots} lugares tomados
           </p>
         </div>
-        <ButtonLink href="/admin/franjas/nueva">+ Nueva franja</ButtonLink>
+        <ButtonLink href="/admin/horarios/nueva">+ Nueva franja</ButtonLink>
       </div>
 
       <p className="text-xs">
         <Link
-          href={showPast ? "/admin/franjas" : "/admin/franjas?ver=todas"}
+          href={showPast ? "/admin/horarios" : "/admin/horarios?ver=todas"}
           className="text-piedra underline"
         >
           {showPast ? "← Ver sólo próximas" : "Ver también las pasadas →"}
@@ -53,8 +53,8 @@ export default async function AdminFranjasPage({
 
       {slots.length === 0 ? (
         <p className="rounded-xl border border-dashed border-lino px-4 py-10 text-center text-sm text-piedra">
-          Todavía no publicaste ninguna franja.{" "}
-          <Link href="/admin/franjas/nueva" className="font-semibold text-ladrillo-deep underline">
+          Todavía no publicaste ningun horario.{" "}
+          <Link href="/admin/horarios/nueva" className="font-semibold text-ladrillo-deep underline">
             Creá la primera
           </Link>
           .

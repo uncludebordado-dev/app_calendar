@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireCompleteProfile } from "@/lib/auth";
 import { isSlotInPast } from "@/lib/date";
@@ -14,6 +15,7 @@ type BookingWithSlot = Booking & { slot: AvailabilitySlot | null };
 
 export default async function MisReservasPage() {
   const profile = await requireCompleteProfile(ROUTES.misReservas);
+  if (profile.role === "admin") redirect("/admin");
   const supabase = await createClient();
 
   const { data } = await supabase

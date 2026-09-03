@@ -17,8 +17,19 @@ const WEBHOOK_SECRET = Deno.env.get("EMAIL_WEBHOOK_SECRET") ?? "";
 
 type EmailEvent = {
   id: string;
-  type: "booking_confirmed" | "booking_cancelled" | "user_registered";
-  payload: Record<string, string | boolean>;
+  type:
+    | "booking_confirmed"
+    | "booking_cancelled"
+    | "user_registered"
+    | "birthday_month"
+    | "kit_reservation";
+  payload: Record<string, string | boolean | number>;
+};
+
+const KIT_NAMES: Record<string, string> = {
+  basico: "Kit Básico",
+  medium: "Kit Medium",
+  pro: "Kit Pro",
 };
 
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
@@ -49,6 +60,53 @@ function longDate(iso: string): string {
 function buildEmails(ev: EmailEvent): { to: string; subject: string; html: string }[] {
   const p = ev.payload as Record<string, string>;
   const name = escapeHtml(p.student_name ?? "");
+
+  if (ev.type === "birthday_month") {
+    const label = String(p.month_label ?? "");
+    const bodyFor = (who: "student" | "admin") => `<div style="${S}">
+      <h2 style="${H}">🎂 ¡Cumpleaños del mes!</h2>
+      <p>${
+        who === "student"
+          ? `Este mes es tu cumpleaños, ${name}. ¡Feliz mes de parte de todo el clu de bordado!`
+          : `Este mes cumple años <b>${name}</b>. Buen momento para un detalle o una actividad especial.`
+      }</p>
+      <p style="color:#77898B;font-size:13px">Aviso automático — ${label}</p>
+    </div>`;
+    return [
+      { to: p.student_email, subject: "🎂 ¡Este mes es tu cumpleaños!", html: bodyFor("student") },
+      { to: ADMIN_EMAIL, subject: `🎂 Este mes cumple años ${p.student_name}`, html: bodyFor("admin") },
+    ];
+  }
+
+  if (ev.type === "kit_reservation") {
+    const kitName = KIT_NAMES[String(p.kit)] ?? String(p.kit);
+    return [
+      {
+        to: ADMIN_EMAIL,
+        subject: `Reserva de kit — ${p.student_name} (${kitName} x${p.quantity})`,
+        html: `<div style="${S}">
+          <h2 style="${H}">Nueva reserva de kit</h2>
+          <table style="border-collapse:collapse;margin:12px 0">
+            <tr><td style="padding:4px 12px 4px 0"><b>Alumna</b></td><td>${name}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0"><b>Teléfono</b></td><td>${escapeHtml(String(p.student_phone ?? ""))}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0"><b>Email</b></td><td>${escapeHtml(String(p.student_email ?? ""))}</td></tr>
+            <tr><td style="padding:4px 12px 4px 0"><b>Kit</b></td><td>${kitName} × ${p.quantity}</td></tr>
+            ${p.note ? `<tr><td style="padding:4px 12px 4px 0"><b>Nota</b></td><td>${escapeHtml(String(p.note))}</td></tr>` : ""}
+          </table>
+          <p style="${BOX}">Contactá a la alumna para coordinar la entrega y el pago en persona.</p>
+        </div>`,
+      },
+      {
+        to: p.student_email,
+        subject: "Recibimos tu reserva de kit ✿",
+        html: `<div style="${S}">
+          <h2 style="${H}">¡Reserva anotada!</h2>
+          <p>Hola ${name}, reservaste <b>${kitName} × ${p.quantity}</b>. La profe te va a
+          escribir para coordinar la entrega. El pago se hace en persona.</p>
+        </div>`,
+      },
+    ];
+  }
 
   if (ev.type === "user_registered") {
     return [

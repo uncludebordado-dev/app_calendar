@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { GoogleButton } from "./GoogleButton";
 import { GOOGLE_AUTH_ENABLED, ROUTES } from "@/lib/constants";
+import { todayKey } from "@/lib/date";
 
 const initial: ActionResult = { ok: false };
 
@@ -85,6 +86,8 @@ export function SignupForm({ next }: { next?: string }) {
         <Field
           label="Fecha de nacimiento"
           type="date"
+          min="1980-01-01"
+          max={todayKey()}
           hint="La usamos para saludarte en tu cumpleaños 🎉"
           error={errors.birthDate?.message}
           {...register("birthDate")}

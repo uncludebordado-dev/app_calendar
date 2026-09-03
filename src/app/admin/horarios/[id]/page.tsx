@@ -7,7 +7,7 @@ import { Alert } from "@/components/ui/Alert";
 import { formatTime } from "@/lib/date";
 import type { AdminRosterRow, AvailabilitySlot } from "@/types/database.types";
 
-export default async function EditarFranjaPage({
+export default async function EditarHorarioPage({
   params,
   searchParams,
 }: {
@@ -35,7 +35,7 @@ export default async function EditarFranjaPage({
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/franjas" className="text-sm text-piedra underline">
+      <Link href="/admin/horarios" className="text-sm text-piedra underline">
         ← Volver
       </Link>
 
@@ -48,7 +48,7 @@ export default async function EditarFranjaPage({
 
       {error === "tiene_reservas" && (
         <Alert tone="error">
-          No se puede eliminar una franja con reservas. Cancelá primero las inscripciones
+          No se puede eliminar un horario con reservas. Cancelá primero las inscripciones
           o simplemente ocultala.
         </Alert>
       )}

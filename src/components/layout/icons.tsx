@@ -53,3 +53,33 @@ export function ToolIcon({ className = base }: IconProps) {
     </svg>
   );
 }
+
+export function UsersIcon({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <circle cx="9" cy="8" r="3.25" />
+      <path d="M3.5 19c1.1-3 3.3-4.5 5.5-4.5S13.4 16 14.5 19" strokeLinecap="round" />
+      <path d="M16 5.5a3 3 0 0 1 0 5.8M17.5 18.5c-.5-2-1.7-3.3-3-4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function ChartIcon({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M4 20V4M4 20h16" strokeLinecap="round" />
+      <rect x="7" y="12" width="3.2" height="5" rx="0.6" />
+      <rect x="12.4" y="8" width="3.2" height="9" rx="0.6" />
+      <rect x="17.8" y="14" width="3.2" height="3" rx="0.6" />
+    </svg>
+  );
+}
+
+export function GiftIcon({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13" strokeLinejoin="round" />
+      <path d="M12 7S10.5 3.5 8.5 4.2 8 7 8 7h4Zm0 0s1.5-3.5 3.5-2.8S16 7 16 7h-4Z" strokeLinejoin="round" />
+    </svg>
+  );
+}

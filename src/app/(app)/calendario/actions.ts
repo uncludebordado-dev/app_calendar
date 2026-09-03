@@ -14,9 +14,9 @@ export interface BookingActionResult {
 
 const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Reserva atómica de una franja. La condición de carrera la resuelve book_slot() en Postgres. */
+/** Reserva atómica de un horario. La condición de carrera la resuelve book_slot() en Postgres. */
 export async function bookSlotAction(slotId: string): Promise<BookingActionResult> {
-  if (!uuidRe.test(slotId)) return { ok: false, error: "Franja inválida." };
+  if (!uuidRe.test(slotId)) return { ok: false, error: "Horario inválido." };
 
   const supabase = await createClient();
   const {

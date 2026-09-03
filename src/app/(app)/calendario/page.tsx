@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireCompleteProfile } from "@/lib/auth";
 import { todayKey } from "@/lib/date";
@@ -8,9 +9,11 @@ import {
   toCalendarSlot,
   groupByDay,
 } from "@/lib/calendar";
+import Link from "next/link";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { Alert } from "@/components/ui/Alert";
 import { STRIKE_BLOCK_THRESHOLD } from "@/lib/constants";
+import { GiftIcon } from "@/components/layout/icons";
 import type { AvailabilitySlot, Booking } from "@/types/database.types";
 
 export const metadata: Metadata = { title: "Calendario — un clu de bordado" };
@@ -21,6 +24,7 @@ export default async function CalendarioPage({
   searchParams: Promise<{ mes?: string; bienvenida?: string }>;
 }) {
   const profile = await requireCompleteProfile();
+  if (profile.role === "admin") redirect("/admin/calendario");
   const { mes, bienvenida } = await searchParams;
 
   const today = todayKey();
@@ -52,6 +56,7 @@ export default async function CalendarioPage({
     toCalendarSlot(s, myBookedSlotIds),
   );
   const slotsByDay = groupByDay(calendarSlots);
+  const myBirthdayMD = profile.birth_date ? profile.birth_date.slice(5) : null; // "MM-DD"
 
   return (
     <div className="space-y-5">
@@ -88,7 +93,24 @@ export default async function CalendarioPage({
         todayKey={today}
         slotsByDay={slotsByDay}
         canBook={!profile.blocked}
+        myBirthdayMD={myBirthdayMD}
       />
+
+      <Link
+        href="/reserva-kit"
+        className="flex items-center gap-3 rounded-xl2 border border-ladrillo/40 bg-ladrillo/5 p-4 transition-colors hover:bg-ladrillo/10"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ladrillo text-white">
+          <GiftIcon className="h-6 w-6" />
+        </span>
+        <span>
+          <span className="block font-semibold text-piedra-deep">Reservá tu kit</span>
+          <span className="block text-sm text-piedra">
+            Básico, Medium o Pro — te lo prepara la profe.
+          </span>
+        </span>
+        <span aria-hidden className="ml-auto text-piedra">→</span>
+      </Link>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function SlotRow({ slot }: { slot: AvailabilitySlot }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <Link
-            href={`/admin/franjas/${slot.id}`}
+            href={`/admin/horarios/${slot.id}`}
             className="rounded-lg border border-lino px-3 py-1.5 text-xs font-semibold text-piedra-deep hover:bg-lino-soft"
           >
             Ver inscriptas
