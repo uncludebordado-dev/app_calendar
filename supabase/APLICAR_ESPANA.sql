@@ -1,11 +1,8 @@
 -- =============================================================================
 -- un clu de bordado — CORRER TODO ESTO en el SQL Editor de Supabase (una vez).
--- Panel + zona horaria España + rediseño + roadmap (puntitos, dashboard, kits, cumpleaños).
 -- =============================================================================
 
--- ================================================================
--- 20260903120000_dashboard.sql
--- ================================================================
+-- ==== 20260903120000_dashboard.sql ====
 
 -- =============================================================================
 -- Panel de administración: fecha de nacimiento, pagos y métricas mensuales.
@@ -335,9 +332,7 @@ $$;
 
 grant execute on function public.admin_student_payments(uuid) to authenticated;
 
--- ================================================================
--- 20260903130000_timezone_madrid.sql
--- ================================================================
+-- ==== 20260903130000_timezone_madrid.sql ====
 
 -- =============================================================================
 -- Cambio de zona horaria del taller a Europe/Madrid.
@@ -468,9 +463,7 @@ end;
 $$;
 
 
--- ================================================================
--- 20260903140000_ux_features.sql
--- ================================================================
+-- ==== 20260903140000_ux_features.sql ====
 
 -- =============================================================================
 -- Rediseño UX: avatar, preferencia de notificaciones, aviso de alta, chat grupal.
@@ -647,9 +640,7 @@ $$;
 
 grant execute on function public.chat_messages(integer, bigint) to authenticated;
 
--- ================================================================
--- 20260903150000_roadmap.sql
--- ================================================================
+-- ==== 20260903150000_roadmap.sql ====
 
 -- =============================================================================
 -- Roadmap: asistencia + pago por "puntito", dashboard, cumpleaños, kits.
@@ -999,6 +990,32 @@ as $$
     and extract(month from p.birth_date)::int = p_month
     and public.is_admin()
   order by extract(day from p.birth_date);
+$$;
+
+grant execute on function public.birthdays_in_month(integer, integer) to authenticated;
+
+-- ==== 20260903160000_public_birthdays.sql ====
+
+-- =============================================================================
+-- Cumpleaños visibles para toda la comunidad en el calendario (alumnas + admin).
+-- Se quita el filtro is_admin(): cualquiera autenticada puede ver de quién es
+-- el cumpleaños de cada día.
+-- =============================================================================
+
+create or replace function public.birthdays_in_month(p_year integer, p_month integer)
+returns table (day integer, full_name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select extract(day from p.birth_date)::int, p.full_name
+  from public.profiles p
+  where p.role = 'alumna'
+    and p.birth_date is not null
+    and extract(month from p.birth_date)::int = p_month
+    and auth.uid() is not null
+  order by extract(day from p.birth_date), p.full_name;
 $$;
 
 grant execute on function public.birthdays_in_month(integer, integer) to authenticated;

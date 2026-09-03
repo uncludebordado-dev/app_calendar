@@ -6,10 +6,12 @@ export function DayPanel({
   dateKey,
   slots,
   canBook,
+  birthdayNames = [],
 }: {
   dateKey: string;
   slots: CalendarSlot[];
   canBook: boolean;
+  birthdayNames?: string[];
 }) {
   const sorted = [...slots].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
@@ -19,9 +21,16 @@ export function DayPanel({
         {formatLongDate(dateKey)}
       </h3>
 
+      {birthdayNames.length > 0 && (
+        <p className="rounded-xl bg-miel/25 px-4 py-2.5 text-sm text-piedra-deep">
+          🎂 {birthdayNames.length === 1 ? "Cumpleaños de" : "Cumpleaños de"}{" "}
+          <b>{birthdayNames.join(", ")}</b>
+        </p>
+      )}
+
       {sorted.length === 0 ? (
         <p className="rounded-xl border border-dashed border-lino px-4 py-6 text-center text-sm text-piedra">
-          No hay horarios para este día.
+          {birthdayNames.length > 0 ? "No hay clase este día." : "No hay horarios para este día."}
         </p>
       ) : (
         <ul className="space-y-3">

@@ -33,7 +33,7 @@ export default async function CalendarioPage({
 
   const supabase = await createClient();
 
-  const [{ data: slots }, { data: myBookings }] = await Promise.all([
+  const [{ data: slots }, { data: myBookings }, { data: bdays }] = await Promise.all([
     supabase
       .from("availability_slots")
       .select("*")
@@ -47,6 +47,7 @@ export default async function CalendarioPage({
       .select("slot_id")
       .eq("user_id", profile.id)
       .eq("status", "confirmed"),
+    supabase.rpc("birthdays_in_month", { p_year: year, p_month: month + 1 }),
   ]);
 
   const myBookedSlotIds = new Set(
@@ -56,7 +57,11 @@ export default async function CalendarioPage({
     toCalendarSlot(s, myBookedSlotIds),
   );
   const slotsByDay = groupByDay(calendarSlots);
-  const myBirthdayMD = profile.birth_date ? profile.birth_date.slice(5) : null; // "MM-DD"
+
+  const birthdaysByDay: Record<number, string[]> = {};
+  for (const b of (bdays ?? []) as { day: number; full_name: string }[]) {
+    (birthdaysByDay[b.day] ??= []).push(b.full_name);
+  }
 
   return (
     <div className="space-y-5">
@@ -93,7 +98,7 @@ export default async function CalendarioPage({
         todayKey={today}
         slotsByDay={slotsByDay}
         canBook={!profile.blocked}
-        myBirthdayMD={myBirthdayMD}
+        birthdaysByDay={birthdaysByDay}
       />
 
       <Link
