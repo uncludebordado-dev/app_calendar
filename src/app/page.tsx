@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-6 py-16 text-center">
-      <Logo size={220} href={null} priority className="drop-shadow-sm" />
+      <Logo width={300} href={null} priority />
 
       <StitchDivider className="mt-8" />
 
@@ -41,7 +41,7 @@ export default function HomePage() {
       </div>
 
       <p className="mt-8 text-xs text-piedra-soft">
-        @uncludebordado · Buenos Aires
+        @uncludebordado · Barcelona
       </p>
     </main>
   );
