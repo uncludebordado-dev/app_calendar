@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { slotSchema, type SlotInput } from "@/lib/validation/slot";
@@ -43,7 +43,10 @@ export function SlotForm({ mode, slotId, defaultValues, bookedCount = 0 }: Props
 
   function onValid(_: SlotInput, event?: React.BaseSyntheticEvent) {
     const form = event?.target as HTMLFormElement | undefined;
-    if (form) formAction(new FormData(form));
+    if (form) {
+      const fd = new FormData(form);
+      startTransition(() => formAction(fd));
+    }
   }
 
   return (

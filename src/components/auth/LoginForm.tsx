@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
@@ -24,7 +24,10 @@ export function LoginForm({ next, authError }: { next?: string; authError?: stri
 
   function onValid(_: LoginInput, event?: React.BaseSyntheticEvent) {
     const form = event?.target as HTMLFormElement | undefined;
-    if (form) formAction(new FormData(form));
+    if (form) {
+      const fd = new FormData(form);
+      startTransition(() => formAction(fd));
+    }
   }
 
   return (

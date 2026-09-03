@@ -5,7 +5,7 @@ type SlotTime = Pick<AvailabilitySlot, "class_date" | "start_time">;
 
 /**
  * Offset (+HH:MM / -HH:MM) de la TZ del taller para una fecha dada.
- * Buenos Aires no tiene DST hoy, pero esto lo deja correcto si cambiara.
+ * Se calcula dinámicamente, así que respeta el horario de verano de Madrid.
  */
 function tzOffset(dateKey: string): string {
   const d = new Date(`${dateKey}T12:00:00Z`);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
@@ -27,7 +27,10 @@ export function SignupForm({ next }: { next?: string }) {
 
   function onValid(_: SignupInput, event?: React.BaseSyntheticEvent) {
     const form = event?.target as HTMLFormElement | undefined;
-    if (form) formAction(new FormData(form));
+    if (form) {
+      const fd = new FormData(form);
+      startTransition(() => formAction(fd));
+    }
   }
 
   if (state.needsEmailConfirmation) {

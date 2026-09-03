@@ -56,7 +56,7 @@ create table if not exists public.payments (
   amount      numeric(10, 2),
   method      text        not null default 'efectivo'
                 check (method in ('efectivo', 'transferencia', 'mercadopago', 'otro')),
-  paid_on     date        not null default (now() at time zone 'America/Argentina/Buenos_Aires')::date,
+  paid_on     date        not null default (now() at time zone 'Europe/Madrid')::date,
   note        text,
   created_by  uuid        references public.profiles (id) on delete set null,
   created_at  timestamptz not null default now()
@@ -102,7 +102,7 @@ begin
     p_slot_id,
     p_amount,
     coalesce(nullif(p_method, ''), 'efectivo'),
-    coalesce(p_paid_on, (now() at time zone 'America/Argentina/Buenos_Aires')::date),
+    coalesce(p_paid_on, (now() at time zone 'Europe/Madrid')::date),
     nullif(trim(coalesce(p_note, '')), ''),
     auth.uid()
   )
@@ -176,7 +176,7 @@ begin
     count(mb.*) filter (
       where mb.status = 'confirmed'
         and mb.no_show = false
-        and (mb.class_date + mb.start_time) < (now() at time zone 'America/Argentina/Buenos_Aires')
+        and (mb.class_date + mb.start_time) < (now() at time zone 'Europe/Madrid')
     ),
     count(mb.*) filter (where mb.no_show),
     count(mb.*) filter (where mb.status = 'cancelled'),
@@ -224,7 +224,7 @@ begin
        where s.class_date between p_from and p_to and b.status = 'confirmed'),
     (select count(*) from public.bookings b join public.availability_slots s on s.id = b.slot_id
        where s.class_date between p_from and p_to and b.status = 'confirmed' and b.no_show = false
-         and (s.class_date + s.start_time) < (now() at time zone 'America/Argentina/Buenos_Aires')),
+         and (s.class_date + s.start_time) < (now() at time zone 'Europe/Madrid')),
     (select count(*) from public.bookings b join public.availability_slots s on s.id = b.slot_id
        where s.class_date between p_from and p_to and b.no_show),
     (select coalesce(sum(amount), 0) from public.payments where paid_on between p_from and p_to),
@@ -254,7 +254,7 @@ security definer
 set search_path = public
 as $$
 declare
-  v_today date := (now() at time zone 'America/Argentina/Buenos_Aires')::date;
+  v_today date := (now() at time zone 'Europe/Madrid')::date;
 begin
   if not public.is_admin() then
     raise exception 'not_admin' using errcode = 'P0001';

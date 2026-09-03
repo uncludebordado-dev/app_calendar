@@ -1,6 +1,7 @@
 /** Constantes de negocio compartidas cliente + servidor. */
 
-export const TIMEZONE = "America/Argentina/Buenos_Aires";
+/** Zona horaria del taller. Los horarios de clase se interpretan en esta zona. */
+export const TIMEZONE = "Europe/Madrid";
 
 /** Cupo máximo por franja (regla del taller). */
 export const MAX_CAPACITY = 6;
