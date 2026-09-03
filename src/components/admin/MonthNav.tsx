@@ -16,7 +16,7 @@ export function MonthNav({
     `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-lino bg-white px-3 py-2">
+    <div className="flex items-center justify-between rounded-xl border border-lino bg-surface px-3 py-2">
       <Link
         href={`${basePath}?mes=${key(prev)}`}
         className="rounded-lg px-2 py-1 text-piedra hover:bg-lino-soft"

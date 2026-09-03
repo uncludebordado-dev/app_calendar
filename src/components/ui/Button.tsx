@@ -12,7 +12,7 @@ const variants: Record<Variant, string> = {
   primary: "bg-ladrillo text-white hover:bg-ladrillo-deep",
   secondary: "bg-miel text-piedra-deep hover:bg-miel-deep",
   ghost: "bg-transparent text-piedra-deep hover:bg-lino-soft border border-lino",
-  danger: "bg-white text-ladrillo-deep border border-ladrillo hover:bg-ladrillo/10",
+  danger: "bg-surface text-ladrillo-deep border border-ladrillo hover:bg-ladrillo/10",
 };
 
 const sizes: Record<Size, string> = {

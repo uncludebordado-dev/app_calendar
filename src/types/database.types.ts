@@ -17,8 +17,19 @@ export type Profile = {
   strikes: number;
   blocked: boolean;
   birth_date: string | null;
+  avatar_url: string | null;
+  notifications_enabled: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type ChatMessage = {
+  id: number;
+  user_id: string;
+  body: string;
+  created_at: string;
+  author_name: string;
+  author_avatar: string | null;
 };
 
 export type PaymentMethod = "efectivo" | "transferencia" | "mercadopago" | "otro";
@@ -198,6 +209,17 @@ export type Database = {
         Update: Partial<Payment>;
         Relationships: [];
       };
+      messages: {
+        Row: {
+          id: number;
+          user_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: { user_id: string; body: string };
+        Update: { body?: string };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -245,6 +267,10 @@ export type Database = {
       admin_student_payments: {
         Args: { p_user_id: string };
         Returns: StudentPaymentRow[];
+      };
+      chat_messages: {
+        Args: { p_limit: number; p_before: number | null };
+        Returns: ChatMessage[];
       };
     };
     Enums: Record<string, never>;

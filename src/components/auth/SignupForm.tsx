@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { signUpAction, type ActionResult } from "@/app/(auth)/actions";
 import { Field } from "@/components/ui/Field";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { GoogleButton } from "./GoogleButton";
@@ -19,10 +20,13 @@ export function SignupForm({ next }: { next?: string }) {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
     mode: "onTouched",
+    defaultValues: { phone: "" },
   });
 
   function onValid(_: SignupInput, event?: React.BaseSyntheticEvent) {
@@ -61,6 +65,7 @@ export function SignupForm({ next }: { next?: string }) {
 
       <form onSubmit={handleSubmit(onValid)} noValidate className="space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
+        <input type="hidden" {...register("phone")} />
 
         <Field
           label="Nombre y apellido"
@@ -68,16 +73,23 @@ export function SignupForm({ next }: { next?: string }) {
           error={errors.fullName?.message}
           {...register("fullName")}
         />
-        <Field
+
+        <PhoneInput
           label="Teléfono"
-          type="tel"
-          inputMode="tel"
-          placeholder="+54 9 11 5555 5555"
-          hint="Con código de país. Lo usamos sólo para avisarte cambios de la clase."
-          autoComplete="tel"
+          value={watch("phone") ?? ""}
+          onChange={(v) => setValue("phone", v, { shouldValidate: true, shouldDirty: true })}
+          hint="Elegí el país y escribí el resto del número."
           error={errors.phone?.message}
-          {...register("phone")}
         />
+
+        <Field
+          label="Fecha de nacimiento"
+          type="date"
+          hint="La usamos para saludarte en tu cumpleaños 🎉"
+          error={errors.birthDate?.message}
+          {...register("birthDate")}
+        />
+
         <Field
           label="Email"
           type="email"

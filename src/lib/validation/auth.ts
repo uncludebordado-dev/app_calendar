@@ -49,10 +49,43 @@ export const phoneSchema = z
   })
   .transform((value) => parsePhone(value).e164 as string);
 
+function checkBirthDate(value: string, ctx: z.RefinementCtx) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Fecha inválida" });
+    return;
+  }
+  const year = Number(value.slice(0, 4));
+  const nowYear = new Date().getUTCFullYear();
+  if (value > new Date().toISOString().slice(0, 10)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "No puede ser en el futuro" });
+  } else if (nowYear - year > 100 || nowYear - year < 5) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Revisá el año" });
+  }
+}
+
+/** Fecha de nacimiento opcional (perfil): YYYY-MM-DD o vacío -> null. */
+export const birthDateSchema = z
+  .string()
+  .trim()
+  .optional()
+  .transform((v) => v ?? "")
+  .superRefine((value, ctx) => {
+    if (value) checkBirthDate(value, ctx);
+  })
+  .transform((v) => (v ? v : null));
+
+/** Fecha de nacimiento obligatoria (registro). */
+export const birthDateRequiredSchema = z
+  .string()
+  .trim()
+  .min(1, "Ingresá tu fecha de nacimiento")
+  .superRefine(checkBirthDate);
+
 export const signupSchema = z
   .object({
     fullName: fullNameSchema,
     phone: phoneSchema,
+    birthDate: birthDateRequiredSchema,
     email: emailSchema,
     password: passwordSchema,
   })
@@ -64,28 +97,6 @@ export const loginSchema = z
     password: z.string().min(1, "Ingresá tu contraseña"),
   })
   .strict();
-
-/** Fecha de nacimiento: opcional, formato YYYY-MM-DD, entre 5 y 100 años. */
-export const birthDateSchema = z
-  .string()
-  .trim()
-  .optional()
-  .transform((v) => v ?? "")
-  .superRefine((value, ctx) => {
-    if (!value) return;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Fecha inválida" });
-      return;
-    }
-    const year = Number(value.slice(0, 4));
-    const nowYear = new Date().getUTCFullYear();
-    if (value > new Date().toISOString().slice(0, 10)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "No puede ser en el futuro" });
-    } else if (nowYear - year > 100 || nowYear - year < 5) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Revisá el año" });
-    }
-  })
-  .transform((v) => (v ? v : null));
 
 export const completeProfileSchema = z
   .object({

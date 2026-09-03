@@ -29,6 +29,7 @@ export async function signUpAction(_prev: ActionResult, formData: FormData): Pro
   const parsed = signupSchema.safeParse({
     fullName: formData.get("fullName"),
     phone: formData.get("phone"),
+    birthDate: formData.get("birthDate"),
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -43,13 +44,13 @@ export async function signUpAction(_prev: ActionResult, formData: FormData): Pro
   }
 
   const supabase = await createClient();
-  const { fullName, phone, email, password } = parsed.data;
+  const { fullName, phone, birthDate, email, password } = parsed.data;
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { full_name: fullName, phone_e164: phone },
+      data: { full_name: fullName, phone_e164: phone, birth_date: birthDate },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
@@ -122,12 +123,17 @@ export async function completeProfileAction(
     return { ok: false, error: "Sesión expirada. Volvé a iniciar sesión." };
   }
 
+  const rawAvatar = String(formData.get("avatarUrl") ?? "").trim();
+  const avatarUrl =
+    rawAvatar && /^https:\/\/[\w.-]+\/\S+$/.test(rawAvatar) ? rawAvatar.slice(0, 500) : null;
+
   const { error } = await supabase
     .from("profiles")
     .update({
       full_name: parsed.data.fullName,
       phone_e164: parsed.data.phone,
       birth_date: parsed.data.birthDate,
+      avatar_url: avatarUrl,
     })
     .eq("id", user.id);
 

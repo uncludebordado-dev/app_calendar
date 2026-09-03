@@ -21,7 +21,7 @@ export default function Error({
         Ya estamos al tanto. Podés reintentar o volver al inicio.
       </p>
 
-      <pre className="mt-4 max-h-56 w-full overflow-auto rounded-xl border border-lino bg-white p-3 text-left text-[11px] leading-relaxed text-piedra-deep">
+      <pre className="mt-4 max-h-56 w-full overflow-auto rounded-xl border border-lino bg-surface p-3 text-left text-[11px] leading-relaxed text-piedra-deep">
         {error?.message || "Error desconocido"}
         {error?.digest ? `\n\ndigest: ${error.digest}` : ""}
       </pre>

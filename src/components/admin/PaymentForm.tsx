@@ -58,7 +58,7 @@ export function PaymentForm({
             name="amount"
             inputMode="decimal"
             placeholder="opcional"
-            className="w-full rounded-lg border border-lino bg-white px-2.5 py-1.5 text-sm"
+            className="w-full rounded-lg border border-lino bg-surface px-2.5 py-1.5 text-sm"
           />
         </label>
         <label className="flex-1">
@@ -66,7 +66,7 @@ export function PaymentForm({
           <select
             name="method"
             defaultValue="efectivo"
-            className="w-full rounded-lg border border-lino bg-white px-2.5 py-1.5 text-sm"
+            className="w-full rounded-lg border border-lino bg-surface px-2.5 py-1.5 text-sm"
           >
             <option value="efectivo">Efectivo</option>
             <option value="transferencia">Transferencia</option>
@@ -80,7 +80,7 @@ export function PaymentForm({
             name="paidOn"
             type="date"
             defaultValue={todayKey()}
-            className="w-full rounded-lg border border-lino bg-white px-2.5 py-1.5 text-sm"
+            className="w-full rounded-lg border border-lino bg-surface px-2.5 py-1.5 text-sm"
           />
         </label>
       </div>
@@ -89,7 +89,7 @@ export function PaymentForm({
         name="note"
         placeholder="Nota (opcional)"
         maxLength={300}
-        className="w-full rounded-lg border border-lino bg-white px-2.5 py-1.5 text-sm"
+        className="w-full rounded-lg border border-lino bg-surface px-2.5 py-1.5 text-sm"
       />
 
       {state.error && <Alert tone="error">{state.error}</Alert>}

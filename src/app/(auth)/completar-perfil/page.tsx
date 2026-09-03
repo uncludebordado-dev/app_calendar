@@ -28,12 +28,19 @@ export default async function CompletarPerfilPage({
   const target = next && next.startsWith("/") ? next : ROUTES.calendario;
   const withWelcome = `${target}${target.includes("?") ? "&" : "?"}bienvenida=1`;
 
+  const googleAvatar =
+    (typeof user.user_metadata?.avatar_url === "string" && user.user_metadata.avatar_url) ||
+    (typeof user.user_metadata?.picture === "string" && user.user_metadata.picture) ||
+    null;
+
   return (
     <CompleteProfileForm
       next={withWelcome}
       defaultName={defaultName}
       defaultPhone={profile?.phone_e164 ?? ""}
       defaultBirthDate={profile?.birth_date ?? ""}
+      defaultAvatar={profile?.avatar_url ?? googleAvatar}
+      googleAvatar={googleAvatar}
     />
   );
 }

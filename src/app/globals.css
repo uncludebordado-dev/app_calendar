@@ -2,34 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    color-scheme: light;
-  }
+/* ---------------------------------------------------------------------------
+   Tokens semánticos como canales RGB ("R G B"), para que Tailwind pueda
+   aplicar el modificador de opacidad (bg-miel/40, etc.).
+   Light por defecto; .dark los reescribe.
+--------------------------------------------------------------------------- */
+:root {
+  --bg: 251 248 243;
+  --surface: 255 255 255;
+  --surface-2: 237 232 224;
+  --border: 223 215 204;
+  --text: 86 101 103;
+  --text-muted: 119 137 139;
+  --text-subtle: 151 163 164;
+  --accent: 217 112 74;
+  --accent-strong: 185 85 47;
+  --honey: 242 193 102;
+  --honey-strong: 227 169 63;
+  color-scheme: light;
+}
 
+:root.dark {
+  --bg: 32 28 25;
+  --surface: 42 37 33;
+  --surface-2: 51 46 41;
+  --border: 68 60 52;
+  --text: 237 230 221;
+  --text-muted: 177 165 152;
+  --text-subtle: 138 128 114;
+  --accent: 229 137 95;
+  --accent-strong: 240 165 131;
+  --honey: 232 189 109;
+  --honey-strong: 215 168 80;
+  color-scheme: dark;
+}
+
+@layer base {
   html {
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-crema text-piedra-deep antialiased;
+    background-color: rgb(var(--bg));
+    color: rgb(var(--text));
+    -webkit-font-smoothing: antialiased;
     font-feature-settings: "ss01", "cv05";
   }
 
-  /* Foco visible y consistente en toda la app (accesibilidad). */
   :focus-visible {
-    @apply outline-none ring-2 ring-ladrillo ring-offset-2 ring-offset-crema;
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--bg)), 0 0 0 4px rgb(var(--accent));
+    border-radius: 6px;
   }
 
   h1, h2, h3 {
-    @apply text-piedra-deep;
+    color: rgb(var(--text));
     text-wrap: balance;
   }
 }
 
 @layer components {
   .card {
-    @apply rounded-xl2 border border-lino bg-white shadow-soft;
+    @apply rounded-xl2 border border-lino bg-surface shadow-soft;
   }
 
   .field-label {
@@ -41,9 +75,9 @@
   }
 
   .field-input {
-    @apply w-full rounded-xl border border-lino bg-white px-3.5 py-2.5 text-base text-piedra-deep
+    @apply w-full rounded-xl border border-lino bg-surface px-3.5 py-2.5 text-base text-piedra-deep
       placeholder:text-piedra-soft
-      focus:border-ladrillo focus:ring-2 focus:ring-ladrillo/30
+      focus:border-ladrillo focus:outline-none focus:ring-2 focus:ring-ladrillo/30
       disabled:cursor-not-allowed disabled:bg-lino-soft;
   }
 
@@ -52,7 +86,6 @@
   }
 }
 
-/* Respeta la preferencia de menos movimiento. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;

@@ -39,6 +39,8 @@ export async function updateSession(request: NextRequest) {
   const isPrivate =
     pathname.startsWith("/calendario") ||
     pathname.startsWith("/mis-reservas") ||
+    pathname.startsWith("/mi-perfil") ||
+    pathname.startsWith("/chat") ||
     pathname.startsWith("/completar-perfil") ||
     pathname.startsWith("/admin");
 

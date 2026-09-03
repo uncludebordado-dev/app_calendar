@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
-import { SiteHeader, AppFooter } from "@/components/layout/SiteHeader";
+import { AppHeader } from "@/components/layout/AppHeader";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { AppLock } from "@/components/security/AppLock";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { requireAdmin } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Administración — un clu de bordado" };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const profile = await requireAdmin();
+  await requireAdmin();
 
   return (
-    <div className="min-h-dvh">
-      <SiteHeader profile={profile} />
-      <div className="mx-auto max-w-3xl px-4 py-6">
+    <div className="min-h-dvh pb-24">
+      <AppLock />
+      <AppHeader />
+      <main className="mx-auto max-w-md px-4 py-5">
         <AdminNav />
         {children}
-      </div>
-      <AppFooter />
+      </main>
+      <BottomNav isAdmin />
     </div>
   );
 }
