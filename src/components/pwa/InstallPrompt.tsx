@@ -13,7 +13,6 @@ function isStandalone() {
   if (typeof window === "undefined") return false;
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    // iOS
     (window.navigator as unknown as { standalone?: boolean }).standalone === true
   );
 }
@@ -47,8 +46,12 @@ export function InstallPrompt() {
       setHidden(false);
     }
 
-    window.addEventListener("appinstalled", () => setHidden(true));
-    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+    const onInstalled = () => setHidden(true);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
   if (hidden || (!deferred && !iosHint)) return null;
@@ -71,21 +74,28 @@ export function InstallPrompt() {
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-28 z-40 flex justify-center px-4">
-      <div className="flex w-full max-w-sm items-center gap-3 rounded-2xl border border-lino/70 bg-crema/95 px-4 py-3 shadow-soft backdrop-blur-xl">
-        <span aria-hidden className="text-lg">📌</span>
+    <div
+      className="relative z-50 w-full bg-ladrillo text-white shadow-soft"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      role="region"
+      aria-label="Instalar la app"
+    >
+      <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-2.5">
+        <span aria-hidden className="text-lg leading-none">🪡</span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-piedra-deep">Instalá la app</p>
-          <p className="text-xs text-piedra">
+          <p className="text-[13px] font-semibold leading-tight">
+            Instalá un clu de bordado
+          </p>
+          <p className="text-[11px] leading-tight text-white/85">
             {iosHint
               ? "Tocá Compartir y luego «Añadir a inicio»."
-              : "Sumá el clu a tu pantalla de inicio."}
+              : "Accedé más rápido desde tu pantalla de inicio."}
           </p>
         </div>
         {deferred && (
           <button
             onClick={install}
-            className="shrink-0 rounded-full bg-ladrillo px-3 py-1.5 text-xs font-semibold text-white"
+            className="shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-ladrillo-deep"
           >
             Instalar
           </button>
@@ -93,7 +103,7 @@ export function InstallPrompt() {
         <button
           onClick={dismiss}
           aria-label="Cerrar"
-          className="shrink-0 rounded-full px-2 py-1 text-piedra hover:text-piedra-deep"
+          className="shrink-0 rounded-full p-1 text-white/80 hover:text-white"
         >
           ✕
         </button>
