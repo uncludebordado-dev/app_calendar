@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sin conexión — un clu de bordado</title>
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 2rem;
+        text-align: center;
+        font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: #fbf8f3;
+        color: #3f3a35;
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #201c19; color: #e7e1d9; }
+      }
+      img { width: 180px; max-width: 60vw; height: auto; }
+      h1 { font-size: 1.15rem; margin: 0; }
+      p { margin: 0; max-width: 22rem; font-size: 0.9rem; opacity: 0.75; }
+      button {
+        margin-top: 0.5rem;
+        border: 0;
+        border-radius: 999px;
+        background: #d9704a;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        padding: 0.7rem 1.4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="/logo.png" alt="un clu de bordado" />
+    <h1>Estás sin conexión</h1>
+    <p>Revisá tu internet y volvé a intentar. Tus reservas y el calendario necesitan conexión.</p>
+    <button onclick="location.reload()">Reintentar</button>
+  </body>
+</html>
