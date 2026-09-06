@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { formatLongDate } from "@/lib/date";
-import type { AdminStudentRow } from "@/types/database.types";
+import { Avatar } from "@/components/ui/Avatar";
 
 export const metadata: Metadata = { title: "Todas las alumnas — un clu de bordado" };
+
+type Row = { id: string; full_name: string; avatar_url: string | null };
 
 function firstLetter(name: string): string {
   const c = name.trim().charAt(0).toUpperCase();
@@ -16,14 +17,16 @@ export default async function TodasLasAlumnasPage() {
   await requireAdmin();
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_students");
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, avatar_url")
+    .eq("role", "alumna");
 
-  const rows = ((data ?? []) as AdminStudentRow[])
+  const rows = ((data ?? []) as Row[])
     .slice()
     .sort((a, b) => a.full_name.localeCompare(b.full_name, "es", { sensitivity: "base" }));
 
-  // Agrupar por inicial para separadores A-Z.
-  const groups: { letter: string; items: AdminStudentRow[] }[] = [];
+  const groups: { letter: string; items: Row[] }[] = [];
   for (const r of rows) {
     const l = firstLetter(r.full_name);
     const g = groups[groups.length - 1];
@@ -41,7 +44,7 @@ export default async function TodasLasAlumnasPage() {
         <h1 className="text-xl font-semibold">Todas las alumnas</h1>
         <p className="mt-1 text-sm text-piedra">
           {rows.length} inscripta{rows.length === 1 ? "" : "s"} en el club, de la A a la Z. Tocá un
-          nombre para ver su perfil, sus pagos y sus clases.
+          nombre para ver su perfil.
         </p>
       </div>
 
@@ -65,22 +68,15 @@ export default async function TodasLasAlumnasPage() {
                   <li key={s.id}>
                     <Link
                       href={`/admin/alumnas/${s.id}`}
-                      className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-lino-soft"
+                      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-lino-soft"
                     >
-                      <span className="min-w-0">
-                        <span className="block truncate font-semibold text-piedra-deep">
-                          {s.full_name}
-                          {s.blocked && (
-                            <span className="ml-2 align-middle text-[11px] font-medium text-ladrillo-deep">
-                              bloqueada
-                            </span>
-                          )}
-                        </span>
-                        <span className="block text-[11px] text-piedra">
-                          Desde el <span className="first-letter:uppercase">{formatLongDate(String(s.created_at).slice(0, 10))}</span>
-                        </span>
+                      <Avatar src={s.avatar_url} name={s.full_name} size={40} />
+                      <span className="min-w-0 flex-1 truncate font-semibold text-piedra-deep">
+                        {s.full_name}
                       </span>
-                      <span aria-hidden className="shrink-0 text-piedra-soft">→</span>
+                      <span aria-hidden className="shrink-0 text-piedra-soft">
+                        →
+                      </span>
                     </Link>
                   </li>
                 ))}
