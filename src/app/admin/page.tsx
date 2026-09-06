@@ -39,19 +39,23 @@ export default async function AdminDashboardPage({
   const { from, to } = monthRange(year, month);
 
   const supabase = await createClient();
-  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: incomeAll }] =
+  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: allPayments }] =
     await Promise.all([
       supabase.rpc("admin_month_totals", { p_from: from, p_to: to }),
       supabase.rpc("admin_students_by_month", { p_months: 12 }),
       supabase.rpc("admin_upcoming_birthdays", { p_days: 30 }),
-      supabase.rpc("admin_income_total"),
+      // Total histórico: TODO el dinero cobrado, sin importar el mes.
+      supabase.from("payments").select("amount"),
     ]);
 
   const t = ((totalsData ?? [])[0] ?? {
     classes_count: 0, reservations_count: 0, attended_count: 0, noshow_count: 0,
     income_total: 0, active_students: 0, new_students: 0,
   }) as MonthTotals;
-  const incomeAllTime = Number(incomeAll ?? 0);
+  const incomeAllTime = (allPayments ?? []).reduce(
+    (n, p) => n + (Number((p as { amount: number | null }).amount) || 0),
+    0,
+  );
   const chart = ((byMonth ?? []) as StudentsByMonthRow[]).map((r) => ({ ym: r.ym, value: r.cumulative }));
   const birthdays = (bdays ?? []) as UpcomingBirthday[];
   const ym = `${year}-${String(month + 1).padStart(2, "0")}`;
