@@ -62,12 +62,15 @@ export default async function AdminDashboardPage({
       <MonthNav year={year} month={month} basePath="/admin" />
 
       <div className="grid grid-cols-2 gap-3">
-        <Kpi label="Asistencias" value={String(t.attended_count)} />
-        <Kpi label="Inasistencias" value={String(t.noshow_count)} />
-        <Kpi label="Clases dadas" value={String(t.classes_count)} />
+        <Kpi label="Clases cobradas" value={String(t.attended_count)} />
+        <Kpi label="Sin cobrar" value={String(t.noshow_count)} />
+        <Kpi label="Clases en agenda" value={String(t.classes_count)} />
         <Kpi label="Alumnas nuevas" value={String(t.new_students)} />
         <div className="col-span-2">
           <Kpi label="Dinero recaudado" value={money.format(t.income_total)} accent />
+          <p className="mt-1 px-1 text-[11px] text-piedra-soft">
+            Cada clase marcada como cobrada suma 10 €.
+          </p>
         </div>
       </div>
 

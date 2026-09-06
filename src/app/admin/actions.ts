@@ -276,6 +276,34 @@ export async function setBookingStatusAction(input: {
 }
 
 // ---------------------------------------------------------------------------
+// "Puntito" simplificado: toggle rojo/verde (sin cobrar / pagó 10 €)
+// ---------------------------------------------------------------------------
+export async function togglePaidAction(input: {
+  bookingId: string;
+  paid: boolean;
+  method?: string;
+}): Promise<AdminActionResult> {
+  await requireAdmin();
+  if (!uuidRe.test(input.bookingId)) return { ok: false, error: "Reserva inválida." };
+
+  const method = METHODS.includes((input.method ?? "") as (typeof METHODS)[number])
+    ? (input.method as string)
+    : "efectivo";
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_toggle_paid", {
+    p_booking_id: input.bookingId,
+    p_paid: input.paid,
+    p_method: method,
+  });
+  if (error) return { ok: false, error: rpcErrorToMessage(error.message) };
+
+  revalidatePath("/admin/alumnas");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Cancelar la reserva de una alumna (desde el panel)
 // ---------------------------------------------------------------------------
 export async function adminCancelBookingAction(formData: FormData): Promise<void> {

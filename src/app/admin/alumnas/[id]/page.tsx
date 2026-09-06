@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { formatPhoneForDisplay } from "@/lib/phone";
+import { formatLongDate } from "@/lib/date";
 import { Avatar } from "@/components/ui/Avatar";
 import type { StudentDetail } from "@/types/database.types";
 
@@ -62,37 +63,45 @@ export default async function AlumnaDetailPage({
       </Link>
 
       <div className="flex items-start gap-3">
-        <Avatar src={detail.avatar_url} name={detail.full_name} size={52} />
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold text-piedra-deep">
-            {detail.full_name}
+        <Avatar src={detail.avatar_url} name={detail.full_name} size={56} />
+        <div className="min-w-0 flex-1">
+          <h1 className="flex flex-wrap items-center gap-2 text-xl font-semibold text-piedra-deep">
+            <span className="break-words">{detail.full_name}</span>
             {detail.blocked && (
-              <span className="ml-2 rounded-full bg-ladrillo/10 px-2 py-0.5 text-xs text-ladrillo-deep">
+              <span className="rounded-full bg-ladrillo/10 px-2 py-0.5 text-xs text-ladrillo-deep">
                 Bloqueada
               </span>
             )}
+            {detail.strikes > 0 && (
+              <span className="rounded-full bg-ladrillo/10 px-2 py-0.5 text-xs text-ladrillo-deep">
+                {detail.strikes} sanciones
+              </span>
+            )}
           </h1>
-          <p className="mt-0.5 text-xs text-piedra">
+          <p className="mt-1 break-words text-xs text-piedra">
             <a href={`tel:${detail.phone_e164}`} className="text-ladrillo-deep underline">
-              {detail.phone_e164 ? formatPhoneForDisplay(detail.phone_e164) : "—"}
+              {detail.phone_e164 ? formatPhoneForDisplay(detail.phone_e164) : "sin teléfono"}
             </a>
             <span className="mx-1 text-piedra-soft">·</span>
-            <a href={`mailto:${detail.email}`} className="text-ladrillo-deep underline">
+            <a href={`mailto:${detail.email}`} className="break-all text-ladrillo-deep underline">
               {detail.email}
             </a>
           </p>
-          <p className="mt-1 text-xs text-piedra">
-            🎂 Cumpleaños: <b className="text-piedra-deep">{birthdayLabel(detail.birth_date)}</b>
-            <span className="mx-1 text-piedra-soft">·</span>
-            Registrada el {detail.registered_on}
-            {detail.strikes > 0 && (
-              <>
-                {" "}· <b className="text-ladrillo-deep">{detail.strikes} sanciones</b>
-              </>
-            )}
-          </p>
         </div>
       </div>
+
+      <dl className="card grid grid-cols-2 gap-x-3 gap-y-2 p-3 text-xs">
+        <div>
+          <dt className="text-piedra-soft">Cumpleaños</dt>
+          <dd className="font-semibold text-piedra-deep">{birthdayLabel(detail.birth_date)}</dd>
+        </div>
+        <div>
+          <dt className="text-piedra-soft">Empezó en el club</dt>
+          <dd className="font-semibold text-piedra-deep first-letter:uppercase">
+            {formatLongDate(detail.registered_on)}
+          </dd>
+        </div>
+      </dl>
 
       {/* Total pagado */}
       <section className="card p-4">
@@ -137,7 +146,7 @@ export default async function AlumnaDetailPage({
           <ul className="card divide-y divide-lino p-0 text-sm">
             {detail.attended.map((a, i) => (
               <li key={i} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="capitalize text-piedra-deep">{dayLabel(a.class_date)}</span>
+                <span className="text-piedra-deep first-letter:uppercase">{dayLabel(a.class_date)}</span>
                 <span className="text-piedra">
                   {a.start_time}–{a.end_time}
                   {a.notes && <span className="text-piedra-soft"> · {a.notes}</span>}

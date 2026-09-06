@@ -18,13 +18,20 @@ export function BarChart({
 
   return (
     <div className="overflow-x-auto pb-1">
-      <div className="flex items-stretch gap-2" style={{ height, minWidth: data.length * 34 }}>
+      <div
+        className="flex items-stretch justify-center gap-2"
+        style={{ height, minWidth: data.length > 4 ? data.length * 34 : undefined }}
+      >
         {data.map((d) => {
           const pct = (d.value / max) * 100;
           const label = MONTH_NAMES_ES[Number(d.ym.slice(5, 7)) - 1].slice(0, 3);
           const isCurrent = d.ym === data[data.length - 1]?.ym;
           return (
-            <div key={d.ym} className="flex flex-1 flex-col items-center" style={{ minWidth: 26 }}>
+            <div
+              key={d.ym}
+              className="flex flex-1 flex-col items-center"
+              style={{ minWidth: 26, maxWidth: 72 }}
+            >
               <div className="flex w-full flex-1 flex-col justify-end">
                 <span className="mb-1 text-center text-[11px] font-semibold text-piedra-deep">
                   {d.value || ""}
