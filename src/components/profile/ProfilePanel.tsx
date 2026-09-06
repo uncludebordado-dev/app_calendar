@@ -52,6 +52,7 @@ export function ProfilePanel({
           defaultBirthDate={profile.birth_date ?? ""}
           defaultAvatar={profile.avatar_url}
           googleAvatar={googleAvatar}
+          isAdmin={profile.role === "admin"}
         />
       </Section>
 

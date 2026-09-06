@@ -125,7 +125,11 @@ export async function completeProfileAction(
 
   const rawAvatar = String(formData.get("avatarUrl") ?? "").trim();
   const avatarUrl =
-    rawAvatar && /^https:\/\/[\w.-]+\/\S+$/.test(rawAvatar) ? rawAvatar.slice(0, 500) : null;
+    rawAvatar === "/icon-512.png"
+      ? rawAvatar
+      : rawAvatar && /^https:\/\/[\w.-]+\/\S+$/.test(rawAvatar)
+        ? rawAvatar.slice(0, 500)
+        : null;
 
   const { error } = await supabase
     .from("profiles")
