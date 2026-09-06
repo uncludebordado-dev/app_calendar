@@ -1,8 +1,12 @@
 import { MONTH_NAMES_ES } from "@/lib/date";
 
+/**
+ * Gráfico de barras simple con flexbox (sin SVG estirado, así los meses no se
+ * "aplastan"). Scrollea en horizontal si hay muchos meses.
+ */
 export function BarChart({
   data,
-  height = 140,
+  height = 160,
 }: {
   data: { ym: string; value: number }[];
   height?: number;
@@ -11,45 +15,30 @@ export function BarChart({
     return <p className="text-sm text-piedra">Sin datos todavía.</p>;
   }
   const max = Math.max(1, ...data.map((d) => d.value));
-  const barW = 100 / data.length;
 
   return (
-    <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" className="w-full" style={{ height }}>
-      {data.map((d, i) => {
-        const h = (d.value / max) * (height - 22);
-        const x = i * barW;
-        const label = MONTH_NAMES_ES[Number(d.ym.slice(5, 7)) - 1].slice(0, 3);
-        return (
-          <g key={d.ym}>
-            <rect
-              x={x + barW * 0.18}
-              y={height - 18 - h}
-              width={barW * 0.64}
-              height={Math.max(h, 1)}
-              rx="1"
-              fill="rgb(var(--accent))"
-            />
-            <text
-              x={x + barW / 2}
-              y={height - 18 - h - 3}
-              textAnchor="middle"
-              fontSize="6"
-              fill="rgb(var(--text-muted))"
-            >
-              {d.value}
-            </text>
-            <text
-              x={x + barW / 2}
-              y={height - 6}
-              textAnchor="middle"
-              fontSize="5.5"
-              fill="rgb(var(--text-subtle))"
-            >
-              {label}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+    <div className="overflow-x-auto pb-1">
+      <div className="flex items-stretch gap-2" style={{ height, minWidth: data.length * 34 }}>
+        {data.map((d) => {
+          const pct = (d.value / max) * 100;
+          const label = MONTH_NAMES_ES[Number(d.ym.slice(5, 7)) - 1].slice(0, 3);
+          const isCurrent = d.ym === data[data.length - 1]?.ym;
+          return (
+            <div key={d.ym} className="flex flex-1 flex-col items-center" style={{ minWidth: 26 }}>
+              <div className="flex w-full flex-1 flex-col justify-end">
+                <span className="mb-1 text-center text-[11px] font-semibold text-piedra-deep">
+                  {d.value || ""}
+                </span>
+                <div
+                  className={`w-full rounded-t-md ${isCurrent ? "bg-ladrillo" : "bg-miel"}`}
+                  style={{ height: `${Math.max(pct, 3)}%` }}
+                />
+              </div>
+              <span className="mt-1.5 text-[11px] capitalize text-piedra">{label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

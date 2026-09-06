@@ -166,7 +166,7 @@ begin
 
   return query
   select
-    p.id, p.full_name, u.email, p.phone_e164, p.birth_date,
+    p.id, p.full_name, u.email::text, p.phone_e164, p.birth_date,
     p.created_at::date, p.strikes, p.blocked,
     coalesce(
       (select jsonb_agg(jsonb_build_object(

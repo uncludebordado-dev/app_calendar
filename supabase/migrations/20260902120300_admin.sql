@@ -38,7 +38,7 @@ begin
     s.id, s.class_date, s.start_time, s.end_time, s.capacity, s.booked_count,
     s.notes, s.is_published,
     b.id, b.status, b.no_show, b.late_cancellation,
-    p.full_name, p.phone_e164, u.email, b.created_at
+    p.full_name, p.phone_e164, u.email::text, b.created_at
   from public.availability_slots s
   left join public.bookings b
     on b.slot_id = s.id and b.status = 'confirmed'
@@ -77,7 +77,7 @@ begin
 
   return query
   select
-    p.id, p.full_name, p.phone_e164, u.email, p.strikes, p.blocked,
+    p.id, p.full_name, p.phone_e164, u.email::text, p.strikes, p.blocked,
     count(b.*) filter (where b.status = 'confirmed'),
     count(b.*) filter (where b.status = 'cancelled'),
     p.created_at

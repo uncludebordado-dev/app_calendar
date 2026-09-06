@@ -171,7 +171,7 @@ begin
     select * from public.payments where paid_on between p_from and p_to
   )
   select
-    p.id, p.full_name, p.phone_e164, u.email, p.birth_date, p.strikes, p.blocked,
+    p.id, p.full_name, p.phone_e164, u.email::text, p.birth_date, p.strikes, p.blocked,
     count(mb.*) filter (where mb.status = 'confirmed'),
     count(mb.*) filter (
       where mb.status = 'confirmed'

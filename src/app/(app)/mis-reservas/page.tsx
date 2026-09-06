@@ -26,12 +26,17 @@ export default async function MisReservasPage() {
 
   const bookings = (data ?? []) as BookingWithSlot[];
 
-  const upcoming = bookings.filter(
-    (b) => b.status === "confirmed" && b.slot && !isSlotInPast(b.slot),
-  );
-  const past = bookings.filter(
-    (b) => b.status === "cancelled" || (b.slot && isSlotInPast(b.slot)),
-  );
+  const slotKey = (b: BookingWithSlot) =>
+    `${b.slot?.class_date ?? "9999-99-99"} ${b.slot?.start_time ?? "99:99"}`;
+
+  const upcoming = bookings
+    .filter((b) => b.status === "confirmed" && b.slot && !isSlotInPast(b.slot))
+    // más próxima primero
+    .sort((a, b) => slotKey(a).localeCompare(slotKey(b)));
+  const past = bookings
+    .filter((b) => b.status === "cancelled" || (b.slot && isSlotInPast(b.slot)))
+    // más reciente primero
+    .sort((a, b) => slotKey(b).localeCompare(slotKey(a)));
 
   return (
     <div className="space-y-6">
