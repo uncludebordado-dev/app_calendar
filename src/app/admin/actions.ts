@@ -183,7 +183,7 @@ export async function resetStrikesAction(formData: FormData): Promise<void> {
 // ---------------------------------------------------------------------------
 // Pagos
 // ---------------------------------------------------------------------------
-const METHODS = ["efectivo", "transferencia", "mercadopago", "otro"] as const;
+const METHODS = ["efectivo", "bizum", "transferencia"] as const;
 
 export async function recordPaymentAction(
   _prev: AdminActionResult,

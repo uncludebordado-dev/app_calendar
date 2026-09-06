@@ -8,9 +8,8 @@ import type { OverviewBooking } from "@/types/database.types";
 
 const METHODS = [
   { value: "efectivo", label: "Efectivo" },
+  { value: "bizum", label: "Bizum" },
   { value: "transferencia", label: "Transferencia" },
-  { value: "mercadopago", label: "MercadoPago" },
-  { value: "otro", label: "Otro" },
 ];
 
 function dateLabel(b: OverviewBooking): string {
@@ -44,7 +43,7 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
     start(async () => {
       const res = await togglePaidAction({ bookingId: booking.booking_id, paid: nextPaid, method });
       if (res.ok) {
-        setOkMsg(nextPaid ? `Cobro registrado · +${CLASS_PRICE_EUR} €` : "Marcada sin cobrar");
+        setOkMsg(nextPaid ? `Pagó · +${CLASS_PRICE_EUR} €` : "Marcada como no pagó");
         router.refresh();
         setTimeout(() => setOpen(false), 650);
       } else {
@@ -75,26 +74,26 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
               onClick={() => apply(false)}
               disabled={pending}
               aria-pressed={!paid}
-              className={`rounded-lg border px-2 py-2 font-semibold transition-colors disabled:opacity-50 ${
+              className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
                 !paid
                   ? "border-ladrillo-deep bg-ladrillo text-white"
                   : "border-lino text-piedra hover:bg-lino-soft"
               }`}
             >
-              Sin cobrar
+              No pagó
             </button>
             <button
               type="button"
               onClick={() => apply(true)}
               disabled={pending}
               aria-pressed={paid}
-              className={`rounded-lg border px-2 py-2 font-semibold transition-colors disabled:opacity-50 ${
+              className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
                 paid
                   ? "border-green-700 bg-green-500 text-white"
                   : "border-lino text-piedra hover:bg-lino-soft"
               }`}
             >
-              Cobrada · {CLASS_PRICE_EUR} €
+              Pagó
             </button>
           </div>
 
@@ -119,7 +118,7 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
             {!pending && okMsg && <span className="text-green-700">✓ {okMsg}</span>}
             {!pending && !err && !okMsg && (
               <span className="text-piedra-soft">
-                Marcar cobrada suma {CLASS_PRICE_EUR} € y una asistencia al panel.
+                «Pagó» suma {CLASS_PRICE_EUR} € y una asistencia al panel.
               </span>
             )}
           </p>

@@ -77,7 +77,7 @@ export type StudentDetail = {
   payments: StudentDetailPayment[];
 };
 
-export type PaymentMethod = "efectivo" | "transferencia" | "mercadopago" | "otro";
+export type PaymentMethod = "efectivo" | "bizum" | "transferencia";
 
 export type Payment = {
   id: string;

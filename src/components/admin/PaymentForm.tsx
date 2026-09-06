@@ -69,9 +69,8 @@ export function PaymentForm({
             className="w-full rounded-lg border border-lino bg-surface px-2.5 py-1.5 text-sm"
           >
             <option value="efectivo">Efectivo</option>
+            <option value="bizum">Bizum</option>
             <option value="transferencia">Transferencia</option>
-            <option value="mercadopago">Mercado Pago</option>
-            <option value="otro">Otro</option>
           </select>
         </label>
         <label className="flex-1">

@@ -18,9 +18,8 @@ const money = new Intl.NumberFormat("es-ES", {
 
 const METHOD_LABEL: Record<string, string> = {
   efectivo: "Efectivo",
+  bizum: "Bizum",
   transferencia: "Transferencia",
-  mercadopago: "MercadoPago",
-  otro: "Otro",
 };
 
 function birthdayLabel(iso: string | null): string {
