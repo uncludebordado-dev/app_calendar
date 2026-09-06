@@ -408,6 +408,10 @@ export type Database = {
         Args: { p_booking_id: string; p_paid: boolean; p_method: string };
         Returns: undefined;
       };
+      admin_income_total: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
       admin_students_overview: {
         Args: { p_from: string; p_to: string };
         Returns: StudentOverviewRow[];

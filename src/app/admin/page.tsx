@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { todayKey, formatLongDate } from "@/lib/date";
+import { todayKey, formatLongDate, MONTH_NAMES_ES } from "@/lib/date";
 import { parseMonthParam, monthRange } from "@/lib/calendar";
 import { MonthNav } from "@/components/admin/MonthNav";
 import { BarChart } from "@/components/admin/BarChart";
@@ -39,16 +39,19 @@ export default async function AdminDashboardPage({
   const { from, to } = monthRange(year, month);
 
   const supabase = await createClient();
-  const [{ data: totalsData }, { data: byMonth }, { data: bdays }] = await Promise.all([
-    supabase.rpc("admin_month_totals", { p_from: from, p_to: to }),
-    supabase.rpc("admin_students_by_month", { p_months: 12 }),
-    supabase.rpc("admin_upcoming_birthdays", { p_days: 30 }),
-  ]);
+  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: incomeAll }] =
+    await Promise.all([
+      supabase.rpc("admin_month_totals", { p_from: from, p_to: to }),
+      supabase.rpc("admin_students_by_month", { p_months: 12 }),
+      supabase.rpc("admin_upcoming_birthdays", { p_days: 30 }),
+      supabase.rpc("admin_income_total"),
+    ]);
 
   const t = ((totalsData ?? [])[0] ?? {
     classes_count: 0, reservations_count: 0, attended_count: 0, noshow_count: 0,
     income_total: 0, active_students: 0, new_students: 0,
   }) as MonthTotals;
+  const incomeAllTime = Number(incomeAll ?? 0);
   const chart = ((byMonth ?? []) as StudentsByMonthRow[]).map((r) => ({ ym: r.ym, value: r.cumulative }));
   const birthdays = (bdays ?? []) as UpcomingBirthday[];
   const ym = `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -62,17 +65,21 @@ export default async function AdminDashboardPage({
       <MonthNav year={year} month={month} basePath="/admin" />
 
       <div className="grid grid-cols-2 gap-3">
+        <Kpi label="Total recaudado" value={money.format(incomeAllTime)} accent />
+        <Kpi
+          label={`Total de ${MONTH_NAMES_ES[month]}`}
+          value={money.format(t.income_total)}
+          accent
+        />
         <Kpi label="Clases cobradas" value={String(t.attended_count)} />
         <Kpi label="Sin cobrar" value={String(t.noshow_count)} />
         <Kpi label="Clases en agenda" value={String(t.classes_count)} />
         <Kpi label="Alumnas nuevas" value={String(t.new_students)} />
-        <div className="col-span-2">
-          <Kpi label="Dinero recaudado" value={money.format(t.income_total)} accent />
-          <p className="mt-1 px-1 text-[11px] text-piedra-soft">
-            Cada clase marcada como cobrada suma 10 €.
-          </p>
-        </div>
       </div>
+      <p className="-mt-3 px-1 text-[11px] text-piedra-soft">
+        Cada clase marcada como “Pagó” suma 10 €. <b>Total recaudado</b> es el histórico;{" "}
+        <b>Total de {MONTH_NAMES_ES[month]}</b>, sólo el mes elegido.
+      </p>
 
       <section className="card p-4">
         <h2 className="mb-1 text-sm font-semibold text-piedra-deep">Total de alumnas por mes</h2>
