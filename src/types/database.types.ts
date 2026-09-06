@@ -32,6 +32,51 @@ export type ChatMessage = {
   author_avatar: string | null;
 };
 
+export type NewsEmoji = "like" | "feliz" | "risa" | "triste";
+
+export type NewsReactionCounts = Record<NewsEmoji, number>;
+
+export type NewsPost = {
+  id: number;
+  title: string;
+  body: string;
+  created_at: string;
+  author_name: string;
+  author_avatar: string | null;
+  reactions: NewsReactionCounts;
+  my_reaction: NewsEmoji | null;
+};
+
+export type StudentAttendedRow = {
+  class_date: string;
+  start_time: string;
+  end_time: string;
+  notes: string | null;
+};
+
+export type StudentDetailPayment = {
+  id: string;
+  paid_on: string;
+  amount: number | null;
+  method: PaymentMethod;
+  note: string | null;
+};
+
+export type StudentDetail = {
+  full_name: string;
+  email: string;
+  phone_e164: string;
+  birth_date: string | null;
+  registered_on: string;
+  strikes: number;
+  blocked: boolean;
+  avatar_url: string | null;
+  total_paid: number;
+  payments_count: number;
+  attended: StudentAttendedRow[];
+  payments: StudentDetailPayment[];
+};
+
 export type PaymentMethod = "efectivo" | "transferencia" | "mercadopago" | "otro";
 
 export type Payment = {
@@ -260,6 +305,29 @@ export type Database = {
         Update: { body?: string };
         Relationships: [];
       };
+      news_posts: {
+        Row: {
+          id: number;
+          author_id: string;
+          title: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: { author_id: string; title: string; body: string };
+        Update: { title?: string; body?: string };
+        Relationships: [];
+      };
+      news_reactions: {
+        Row: {
+          post_id: number;
+          user_id: string;
+          emoji: NewsEmoji;
+          created_at: string;
+        };
+        Insert: { post_id: number; user_id: string; emoji: NewsEmoji };
+        Update: { emoji?: NewsEmoji };
+        Relationships: [];
+      };
       kit_orders: {
         Row: KitOrder;
         Insert: { user_id: string; kit: string; quantity?: number; note?: string | null };
@@ -317,6 +385,14 @@ export type Database = {
       chat_messages: {
         Args: { p_limit: number; p_before: number | null };
         Returns: ChatMessage[];
+      };
+      news_feed: {
+        Args: { p_limit: number };
+        Returns: NewsPost[];
+      };
+      admin_student_detail: {
+        Args: { p_user_id: string };
+        Returns: StudentDetail[];
       };
       admin_set_booking_status: {
         Args: {

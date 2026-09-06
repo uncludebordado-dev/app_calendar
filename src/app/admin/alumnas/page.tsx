@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { todayKey } from "@/lib/date";
@@ -46,8 +47,8 @@ export default async function AdminAlumnasPage({
       <MonthNav year={year} month={month} basePath="/admin/alumnas" />
 
       <p className="flex flex-wrap gap-x-3 gap-y-1 px-1 text-xs text-piedra">
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-ladrillo" /> pendiente / no pagó</span>
-        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-amber-400" /> pagó</span>
+        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-ladrillo" /> no pagó</span>
+        <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-amber-400" /> asistió y no pagó</span>
         <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-full bg-green-500" /> asistió y pagó</span>
       </p>
 
@@ -64,7 +65,12 @@ export default async function AdminAlumnasPage({
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-semibold text-piedra-deep">
-                      {s.full_name}
+                      <Link
+                        href={`/admin/alumnas/${s.user_id}`}
+                        className="underline decoration-lino underline-offset-2 hover:decoration-ladrillo"
+                      >
+                        {s.full_name}
+                      </Link>
                       {s.blocked && (
                         <span className="ml-2 rounded-full bg-ladrillo/10 px-2 py-0.5 text-xs text-ladrillo-deep">
                           Bloqueada

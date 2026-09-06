@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
 import {
   CalendarIcon,
-  ChatIcon,
+  NewsIcon,
   SparkleIcon,
   TicketIcon,
   ToolIcon,
@@ -36,11 +36,11 @@ export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
 
   const right: Item[] = isAdmin
     ? [
-        { href: "/chat", label: "Chat", icon: ChatIcon },
+        { href: "/news", label: "News", icon: NewsIcon },
         { href: "/admin", label: "Admin", icon: ToolIcon },
       ]
     : [
-        { href: "/chat", label: "Chat", icon: ChatIcon },
+        { href: "/news", label: "News", icon: NewsIcon },
         { href: ROUTES.miPerfil, label: "Perfil", icon: UserIcon },
       ];
 

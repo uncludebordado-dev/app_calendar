@@ -42,7 +42,7 @@ export default async function AdminDashboardPage({
   const [{ data: totalsData }, { data: byMonth }, { data: bdays }] = await Promise.all([
     supabase.rpc("admin_month_totals", { p_from: from, p_to: to }),
     supabase.rpc("admin_students_by_month", { p_months: 12 }),
-    supabase.rpc("admin_upcoming_birthdays", { p_days: 45 }),
+    supabase.rpc("admin_upcoming_birthdays", { p_days: 30 }),
   ]);
 
   const t = ((totalsData ?? [])[0] ?? {
@@ -78,7 +78,7 @@ export default async function AdminDashboardPage({
       </section>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-semibold text-piedra-deep">Cumpleaños próximos (45 días)</h2>
+        <h2 className="text-sm font-semibold text-piedra-deep">Cumpleaños próximos (30 días)</h2>
         {birthdays.length === 0 ? (
           <p className="rounded-xl border border-dashed border-lino px-4 py-5 text-center text-sm text-piedra">
             Nadie cumple años pronto (o falta cargar fechas en los perfiles).

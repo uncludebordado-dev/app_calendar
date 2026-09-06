@@ -28,6 +28,15 @@ export function ChatIcon({ className = base }: IconProps) {
   );
 }
 
+export function NewsIcon({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1Z" strokeLinejoin="round" />
+      <path d="M17 9a4 4 0 0 1 0 6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function UserIcon({ className = base }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>

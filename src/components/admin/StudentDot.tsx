@@ -19,7 +19,21 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
   const [method, setMethod] = useState("efectivo");
   const [err, setErr] = useState<string | null>(null);
 
+  // Verde: asistió y pagó. Amarillo: hizo una de las dos. Rojo: nada / no pagó.
   const green = booking.attended === true && booking.paid;
+  const amber = !green && (booking.attended === true || booking.paid);
+  const dotClass = green
+    ? "border-green-700 bg-green-500"
+    : amber
+      ? "border-amber-600 bg-amber-400"
+      : "border-ladrillo-deep bg-ladrillo";
+  const dotState = green
+    ? "asistió y pagó"
+    : booking.attended === true
+      ? "asistió, falta pago"
+      : booking.paid
+        ? "pagó, falta asistencia"
+        : "no pagó";
 
   function save() {
     setErr(null);
@@ -45,15 +59,9 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title={`${label(booking)} — ${green ? "asistió y pagó" : booking.paid ? "pagó" : booking.attended ? "asistió" : "pendiente"}`}
+        title={`${label(booking)} — ${dotState}`}
         aria-label={`Marcar reserva del ${label(booking)}`}
-        className={`h-3.5 w-3.5 rounded-full border transition-transform hover:scale-110 ${
-          green
-            ? "border-green-700 bg-green-500"
-            : booking.paid
-              ? "border-amber-600 bg-amber-400"
-              : "border-ladrillo-deep bg-ladrillo"
-        }`}
+        className={`h-3.5 w-3.5 rounded-full border transition-transform hover:scale-110 ${dotClass}`}
       />
       {open && (
         <div className="absolute left-1/2 top-6 z-20 w-60 -translate-x-1/2 rounded-xl border border-lino bg-surface p-3 text-left text-xs shadow-soft">
