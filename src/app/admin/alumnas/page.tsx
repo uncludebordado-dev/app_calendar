@@ -43,10 +43,18 @@ export default async function AdminAlumnasPage({
       <div>
         <h1 className="text-xl font-semibold">Alumnas</h1>
         <p className="mt-1 text-sm text-piedra">
-          {rows.length} registrada{rows.length === 1 ? "" : "s"}. Tocá un punto para marcar la
-          clase como cobrada ({CLASS_PRICE_EUR} €) o sin cobrar.
+          Desglose de pagos por mes. Tocá un punto para marcarlo como pagado
+          ({CLASS_PRICE_EUR} €) o sin pagar.
         </p>
       </div>
+
+      <Link
+        href="/admin/alumnas/todas"
+        className="flex items-center justify-between rounded-xl bg-ladrillo px-4 py-3 text-sm font-semibold text-white shadow-soft transition-transform active:scale-[0.99]"
+      >
+        Ver todas las alumnas
+        <span aria-hidden className="text-base">→</span>
+      </Link>
 
       <MonthNav year={year} month={month} basePath="/admin/alumnas" />
 
