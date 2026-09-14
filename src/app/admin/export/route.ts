@@ -10,7 +10,10 @@ export const dynamic = "force-dynamic";
 /** CSV separado por ";" con BOM para que Excel lo abra bien en español. */
 function csv(rows: (string | number)[][]): string {
   const esc = (v: string | number) => {
-    const s = String(v ?? "");
+    let s = String(v ?? "");
+    // Evita que Excel/Sheets interprete un valor como fórmula (p. ej. un
+    // nombre cargado como "=HYPERLINK(...)"): se antepone un apóstrofe.
+    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return "﻿" + rows.map((r) => r.map(esc).join(";")).join("\r\n");
