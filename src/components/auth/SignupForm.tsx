@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 import { signUpAction, type ActionResult } from "@/app/(auth)/actions";
 import { Field } from "@/components/ui/Field";
+import { PasswordField } from "@/components/ui/PasswordField";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
@@ -101,9 +102,8 @@ export function SignupForm({ next }: { next?: string }) {
           error={errors.email?.message}
           {...register("email")}
         />
-        <Field
+        <PasswordField
           label="Contraseña"
-          type="password"
           autoComplete="new-password"
           hint="Mínimo 8 caracteres, con letras y números."
           error={errors.password?.message}

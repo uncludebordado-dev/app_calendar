@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
 import { signInAction, type ActionResult } from "@/app/(auth)/actions";
 import { Field } from "@/components/ui/Field";
+import { PasswordField } from "@/components/ui/PasswordField";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { GoogleButton } from "./GoogleButton";
@@ -33,8 +34,11 @@ export function LoginForm({ next, authError }: { next?: string; authError?: stri
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h1 className="text-xl font-semibold">Hola de nuevo</h1>
-        <p className="mt-1 text-sm text-piedra">Entrá para reservar o ver tus clases.</p>
+        <h1 className="text-xl font-semibold">¡Hola de nuevo!</h1>
+        <p className="mt-1 text-sm text-piedra">Un club para bordar, compartir y hacer red.</p>
+        <p className="mt-1 text-xs text-piedra-soft">
+          Elegí el día que te quede cómodo y guardá tu lugar en la mesa · Grupos reducidos
+        </p>
       </div>
 
       {GOOGLE_AUTH_ENABLED && (
@@ -58,9 +62,8 @@ export function LoginForm({ next, authError }: { next?: string; authError?: stri
           error={errors.email?.message}
           {...register("email")}
         />
-        <Field
+        <PasswordField
           label="Contraseña"
-          type="password"
           autoComplete="current-password"
           error={errors.password?.message}
           {...register("password")}

@@ -173,14 +173,21 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
 
   // booking_cancelled
   const late = p.late_cancellation === true || p.late_cancellation === "true";
+  const penalty = p.penalty_fee === true || p.penalty_fee === "true";
   return [
     {
       to: p.student_email,
-      subject: "Cancelamos tu reserva del clu",
+      subject: penalty ? "Cancelamos tu reserva — se cobra la clase" : "Cancelamos tu reserva del clu",
       html: `<div style="${S}">
         <h2 style="${H}">Reserva cancelada</h2>
         <p>Hola ${name}, dimos de baja tu lugar para el ${when}.</p>
-        ${late ? `<p style="${BOX}">Como la cancelación fue con menos de 48 horas, se registró una sanción.</p>` : `<p>¡Gracias por avisar con tiempo!</p>`}
+        ${
+          penalty
+            ? `<p style="${BOX}">Como la baja fue con menos de 24 horas, la clase se cobra igual (10 €).</p>`
+            : late
+              ? `<p style="${BOX}">Como la cancelación fue con menos de 48 horas, se registró una sanción.</p>`
+              : `<p>¡Gracias por avisar con tiempo!</p>`
+        }
       </div>`,
     },
     {
@@ -193,6 +200,7 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
           <tr><td style="padding:4px 12px 4px 0"><b>Teléfono</b></td><td>${escapeHtml(p.student_phone ?? "")}</td></tr>
           <tr><td style="padding:4px 12px 4px 0"><b>Clase</b></td><td>${when}</td></tr>
           <tr><td style="padding:4px 12px 4px 0"><b>Tardía</b></td><td>${late ? "Sí (con sanción)" : "No"}</td></tr>
+          <tr><td style="padding:4px 12px 4px 0"><b>Se cobra igual</b></td><td>${penalty ? "Sí (10 €)" : "No"}</td></tr>
         </table>
       </div>`,
     },

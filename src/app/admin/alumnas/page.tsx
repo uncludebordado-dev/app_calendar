@@ -59,12 +59,15 @@ export default async function AdminAlumnasPage({
       <MonthNav year={year} month={month} basePath="/admin/alumnas" />
 
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1 text-xs text-piedra">
-        <span className="flex items-center gap-3">
+        <span className="flex flex-wrap items-center gap-3">
           <span className="flex items-center gap-1">
             <span className="h-3 w-3 rounded-full bg-ladrillo" /> sin cobrar
           </span>
           <span className="flex items-center gap-1">
             <span className="h-3 w-3 rounded-full bg-green-500" /> cobrada
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-3 w-3 rounded-full bg-amber-400" /> baja &lt;24h con cargo
           </span>
         </span>
         {totalCobradas > 0 && (

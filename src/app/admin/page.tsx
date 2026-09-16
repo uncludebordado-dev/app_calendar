@@ -130,6 +130,20 @@ export default async function AdminDashboardPage({
         </a>
       </section>
 
+      {/* Kits */}
+      <section className="card p-4">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Kits</h2>
+        <p className="mb-3 text-xs text-piedra">
+          Editá el nombre, la bajada y lo que incluye cada kit.
+        </p>
+        <Link
+          href="/admin/kits"
+          className="inline-flex items-center gap-2 rounded-xl border border-lino px-4 py-2.5 text-sm font-semibold text-piedra-deep hover:bg-lino-soft"
+        >
+          Editar kits →
+        </Link>
+      </section>
+
       {/* Perfil de la profesora */}
       <section className="card p-4">
         <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Mi perfil</h2>

@@ -13,9 +13,20 @@ import {
   UsersIcon,
 } from "./icons";
 
-type Item = { href: string; label: string; icon: (p: { className?: string }) => React.ReactNode };
+type Item = {
+  href: string;
+  label: string;
+  icon: (p: { className?: string }) => React.ReactNode;
+  dot?: boolean;
+};
 
-export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
+export function BottomNav({
+  isAdmin,
+  newsUnread = false,
+}: {
+  isAdmin: boolean;
+  newsUnread?: boolean;
+}) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
@@ -36,18 +47,18 @@ export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
 
   const right: Item[] = isAdmin
     ? [
-        { href: "/news", label: "News", icon: NewsIcon },
+        { href: "/news", label: "News", icon: NewsIcon, dot: newsUnread },
         { href: "/admin", label: "Admin", icon: ToolIcon },
       ]
     : [
-        { href: "/news", label: "News", icon: NewsIcon },
+        { href: "/news", label: "News", icon: NewsIcon, dot: newsUnread },
         { href: ROUTES.miPerfil, label: "Perfil", icon: UserIcon },
       ];
 
   const fabHref = isAdmin ? "/admin/horarios/nueva" : ROUTES.calendario;
   const fabLabel = isAdmin ? "Agregar una clase" : "Reservar una clase";
 
-  const Tab = ({ href, label, icon: Icon }: Item) => {
+  const Tab = ({ href, label, icon: Icon, dot }: Item) => {
     const active = isActive(href);
     return (
       <Link
@@ -57,8 +68,19 @@ export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
           active ? "text-ladrillo-deep" : "text-piedra hover:text-piedra-deep"
         }`}
       >
-        <Icon className="h-[22px] w-[22px]" />
-        <span className="leading-none">{label}</span>
+        <span className="relative">
+          <Icon className="h-[22px] w-[22px]" />
+          {dot && (
+            <span
+              aria-hidden
+              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ladrillo ring-2 ring-crema"
+            />
+          )}
+        </span>
+        <span className="leading-none">
+          {label}
+          {dot && <span className="sr-only"> (hay novedades)</span>}
+        </span>
       </Link>
     );
   };

@@ -37,6 +37,25 @@ export function NewsIcon({ className = base }: IconProps) {
   );
 }
 
+export function EyeIcon({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon({ className = base }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <path d="M3 3l18 18" strokeLinecap="round" />
+      <path d="M10.6 5.63A10.6 10.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a15.3 15.3 0 0 1-3.4 4.13M6.6 6.6C4 8.3 2.5 12 2.5 12s3.5 6.5 9.5 6.5c1.2 0 2.28-.24 3.24-.63" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9.9 10.1a3 3 0 0 0 4.24 4.24" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function UserIcon({ className = base }: IconProps) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>

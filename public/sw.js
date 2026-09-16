@@ -4,7 +4,7 @@
  *  - Estáticos de Next (/_next/static) e imágenes: stale-while-revalidate.
  *  - Nunca cachea /api, /auth ni peticiones con credenciales de Supabase.
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `clu-static-${VERSION}`;
 const PAGES_CACHE = `clu-pages-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
@@ -34,6 +34,40 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+
+/* Push de News: la Edge Function manda { title, body, url }. */
+self.addEventListener("push", (event) => {
+  let data = { title: "un clu de bordado", body: "Hay novedades en News." };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch {
+    /* payload no era JSON: se usan los valores por defecto */
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url || "/news" },
+      tag: "clu-news",
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/news";
+  event.waitUntil(
+    (async () => {
+      const clientsList = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const c of clientsList) {
+        if (new URL(c.url).pathname === url && "focus" in c) return c.focus();
+      }
+      return self.clients.openWindow(url);
+    })(),
+  );
 });
 
 function isStaticAsset(url) {

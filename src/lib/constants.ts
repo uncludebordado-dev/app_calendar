@@ -9,6 +9,9 @@ export const MAX_CAPACITY = 6;
 /** Horas de anticipación para cancelar sin sanción. */
 export const FREE_CANCEL_HOURS = 48;
 
+/** Debajo de este umbral, la baja igual cobra la clase completa. */
+export const LATE_FEE_HOURS = 24;
+
 /** Strikes que provocan el bloqueo automático de reservas. */
 export const STRIKE_BLOCK_THRESHOLD = 3;
 
@@ -25,6 +28,7 @@ export const ADMIN_EMAIL = "uncludebordado@gmail.com";
 /** Rate limiting (ventanas). */
 export const RATE_LIMITS = {
   signup: { max: 5, windowSeconds: 60 * 60 }, // 5 registros / hora / IP
+  login: { max: 10, windowSeconds: 15 * 60 }, // 10 intentos de login / 15 min / IP
   booking: { max: 12, windowSeconds: 60 * 60 }, // 12 reservas o intentos / hora / usuaria
 } as const;
 

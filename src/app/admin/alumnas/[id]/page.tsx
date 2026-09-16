@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { formatPhoneForDisplay } from "@/lib/phone";
 import { formatLongDate } from "@/lib/date";
 import { Avatar } from "@/components/ui/Avatar";
+import { setPaymentExemptAction } from "@/app/admin/actions";
 import type { StudentDetail } from "@/types/database.types";
 
 export const metadata: Metadata = { title: "Ficha de alumna — un clu de bordado" };
@@ -101,6 +102,31 @@ export default async function AlumnaDetailPage({
           </dd>
         </div>
       </dl>
+
+      <section className="card flex items-start justify-between gap-3 p-4">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-piedra-deep">Exenta de pago</p>
+          <p className="mt-0.5 text-xs text-piedra">
+            Se le sigue marcando la asistencia, pero nunca se le carga el cobro de{" "}
+            {money.format(10)} ni suma a los totales.
+          </p>
+        </div>
+        <form action={setPaymentExemptAction} className="shrink-0">
+          <input type="hidden" name="userId" value={id} />
+          <input type="hidden" name="exempt" value={(!detail.payment_exempt).toString()} />
+          <button
+            type="submit"
+            aria-pressed={detail.payment_exempt}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              detail.payment_exempt
+                ? "bg-ladrillo text-white"
+                : "border border-lino text-piedra hover:bg-lino-soft"
+            }`}
+          >
+            {detail.payment_exempt ? "Exenta ✓" : "Marcar exenta"}
+          </button>
+        </form>
+      </section>
 
       {/* Total pagado */}
       <section className="card p-4">

@@ -1,5 +1,5 @@
 import { formatLongDate, formatTime, hoursUntilSlot } from "@/lib/date";
-import { FREE_CANCEL_HOURS } from "@/lib/constants";
+import { FREE_CANCEL_HOURS, LATE_FEE_HOURS } from "@/lib/constants";
 import type { AvailabilitySlot, Booking } from "@/types/database.types";
 import { CancelButton } from "./CancelButton";
 
@@ -19,6 +19,7 @@ export function BookingRow({
   const cancelled = booking.status === "cancelled";
   const hoursLeft = slot ? hoursUntilSlot(slot) : -1;
   const withinFreeWindow = hoursLeft >= FREE_CANCEL_HOURS;
+  const willChargeFee = hoursLeft >= 0 && hoursLeft < LATE_FEE_HOURS;
 
   return (
     <div className={`card p-4 ${cancelled ? "opacity-70" : ""}`}>
@@ -48,6 +49,11 @@ export function BookingRow({
                 Confirmada
               </span>
             )}
+            {booking.penalty_fee && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">
+                Baja &lt;24 h · se cobró la clase
+              </span>
+            )}
             {booking.late_cancellation && (
               <span className="rounded-full bg-ladrillo/10 px-2 py-0.5 text-ladrillo-deep">
                 Cancelación tardía · sanción
@@ -63,7 +69,11 @@ export function BookingRow({
 
         {kind === "upcoming" && !cancelled && slot && (
           <div className="shrink-0">
-            <CancelButton bookingId={booking.id} withinFreeWindow={withinFreeWindow} />
+            <CancelButton
+              bookingId={booking.id}
+              withinFreeWindow={withinFreeWindow}
+              willChargeFee={willChargeFee}
+            />
           </div>
         )}
       </div>

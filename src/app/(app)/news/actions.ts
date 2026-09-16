@@ -44,3 +44,55 @@ export async function deleteNewsAction(formData: FormData): Promise<void> {
   await supabase.from("news_posts").delete().eq("id", id);
   revalidatePath("/news");
 }
+
+// ---------------------------------------------------------------------------
+// Notificaciones push (News)
+// ---------------------------------------------------------------------------
+export interface PushActionResult {
+  ok: boolean;
+  error?: string;
+}
+
+export async function subscribeToPushAction(sub: {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}): Promise<PushActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Tenés que iniciar sesión." };
+
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    { user_id: user.id, endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+    { onConflict: "endpoint" },
+  );
+  if (error) return { ok: false, error: "No se pudo activar. Probá de nuevo." };
+  return { ok: true };
+}
+
+export async function unsubscribeFromPushAction(endpoint: string): Promise<PushActionResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false };
+
+  await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
+  return { ok: true };
+}
+
+/** Marca "vistas" las news hasta ahora, para el puntito naranja del nav. */
+export async function markNewsSeenAction(): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase
+    .from("profiles")
+    .update({ news_last_seen_at: new Date().toISOString() })
+    .eq("id", user.id);
+}

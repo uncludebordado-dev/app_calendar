@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { reserveKitAction } from "@/app/(app)/reserva-kit/actions";
 import { Alert } from "@/components/ui/Alert";
-import type { KitInfo } from "@/lib/kits";
+import { KIT_ACCENT, type KitInfo } from "@/lib/kits";
 
 function KitArt({ accent }: { accent: string }) {
   return (
@@ -36,7 +36,7 @@ export function KitCard({ kit }: { kit: KitInfo }) {
 
   return (
     <div className="card space-y-3 p-4">
-      <KitArt accent={kit.accent} />
+      <KitArt accent={KIT_ACCENT[kit.id]} />
       <div>
         <h2 className="text-base font-semibold text-piedra-deep">{kit.name}</h2>
         <p className="text-sm text-piedra">{kit.tagline}</p>

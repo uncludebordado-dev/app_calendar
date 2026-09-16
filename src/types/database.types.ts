@@ -19,6 +19,8 @@ export type Profile = {
   birth_date: string | null;
   avatar_url: string | null;
   notifications_enabled: boolean;
+  payment_exempt: boolean;
+  news_last_seen_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -71,6 +73,7 @@ export type StudentDetail = {
   strikes: number;
   blocked: boolean;
   avatar_url: string | null;
+  payment_exempt: boolean;
   total_paid: number;
   payments_count: number;
   attended: StudentAttendedRow[];
@@ -145,6 +148,7 @@ export type OverviewBooking = {
   status: BookingStatus;
   attended: boolean | null;
   no_show: boolean | null;
+  penalty_fee: boolean;
   paid: boolean;
   amount: number | null;
 };
@@ -165,6 +169,24 @@ export type StudentsByMonthRow = {
   ym: string;
   new_count: number;
   cumulative: number;
+};
+
+export type PushSubscriptionRow = {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+};
+
+export type KitRow = {
+  id: "basico" | "medium" | "pro";
+  name: string;
+  tagline: string;
+  items: string[];
+  sort_order: number;
+  updated_at: string;
 };
 
 export type KitOrder = {
@@ -198,6 +220,7 @@ export type Booking = {
   status: BookingStatus;
   late_cancellation: boolean;
   no_show: boolean;
+  penalty_fee: boolean;
   created_at: string;
   cancelled_at: string | null;
   cancelled_by: string | null;
@@ -334,6 +357,18 @@ export type Database = {
         Update: Partial<KitOrder>;
         Relationships: [];
       };
+      kits: {
+        Row: KitRow;
+        Insert: InsertOf<KitRow, "id" | "name">;
+        Update: Partial<KitRow>;
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: PushSubscriptionRow;
+        Insert: InsertOf<PushSubscriptionRow, "user_id" | "endpoint" | "p256dh" | "auth">;
+        Update: Partial<PushSubscriptionRow>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -405,6 +440,10 @@ export type Database = {
         Returns: undefined;
       };
       admin_toggle_paid: {
+        Args: { p_booking_id: string; p_paid: boolean; p_method: string };
+        Returns: undefined;
+      };
+      admin_toggle_penalty_paid: {
         Args: { p_booking_id: string; p_paid: boolean; p_method: string };
         Returns: undefined;
       };

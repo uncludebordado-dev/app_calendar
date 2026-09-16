@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { kitById } from "@/lib/kits";
+import { isKitId } from "@/lib/kits";
 
 export interface KitActionResult {
   ok: boolean;
@@ -13,7 +13,7 @@ export async function reserveKitAction(input: {
   quantity: number;
   note?: string;
 }): Promise<KitActionResult> {
-  if (!kitById(input.kit)) return { ok: false, error: "Kit inválido." };
+  if (!isKitId(input.kit)) return { ok: false, error: "Kit inválido." };
   const quantity = Math.max(1, Math.min(20, Math.round(input.quantity || 1)));
 
   const supabase = await createClient();

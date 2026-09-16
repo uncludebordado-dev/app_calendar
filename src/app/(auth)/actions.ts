@@ -83,7 +83,7 @@ export async function signInAction(_prev: ActionResult, formData: FormData): Pro
   }
 
   const ip = await getClientIp();
-  if (!(await checkRateLimit("signup", `login:${ip}`))) {
+  if (!(await checkRateLimit("login", `login:${ip}`))) {
     return { ok: false, error: "Demasiados intentos. Esperá unos minutos." };
   }
 

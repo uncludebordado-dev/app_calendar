@@ -304,6 +304,49 @@ export async function togglePaidAction(input: {
 }
 
 // ---------------------------------------------------------------------------
+// Sanción por baja <24h: cobrar / descobrar la clase igual (queda amarilla).
+// ---------------------------------------------------------------------------
+export async function togglePenaltyPaidAction(input: {
+  bookingId: string;
+  paid: boolean;
+  method?: string;
+}): Promise<AdminActionResult> {
+  await requireAdmin();
+  if (!uuidRe.test(input.bookingId)) return { ok: false, error: "Reserva inválida." };
+
+  const method = METHODS.includes((input.method ?? "") as (typeof METHODS)[number])
+    ? (input.method as string)
+    : "efectivo";
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_toggle_penalty_paid", {
+    p_booking_id: input.bookingId,
+    p_paid: input.paid,
+    p_method: method,
+  });
+  if (error) return { ok: false, error: rpcErrorToMessage(error.message) };
+
+  revalidatePath("/admin/alumnas");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Exención de pago (alumnas que nunca generan cobro, sólo asistencia)
+// ---------------------------------------------------------------------------
+export async function setPaymentExemptAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const exempt = formData.get("exempt") === "true";
+  if (!uuidRe.test(userId)) return;
+
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ payment_exempt: exempt }).eq("id", userId);
+  revalidatePath(`/admin/alumnas/${userId}`);
+  revalidatePath("/admin/alumnas");
+}
+
+// ---------------------------------------------------------------------------
 // Cancelar la reserva de una alumna (desde el panel)
 // ---------------------------------------------------------------------------
 export async function adminCancelBookingAction(formData: FormData): Promise<void> {

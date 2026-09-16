@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { togglePaidAction } from "@/app/admin/actions";
+import { togglePaidAction, togglePenaltyPaidAction } from "@/app/admin/actions";
 import { CLASS_PRICE_EUR } from "@/lib/constants";
 import type { OverviewBooking } from "@/types/database.types";
 
@@ -26,6 +26,7 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
   const wrapRef = useRef<HTMLSpanElement>(null);
 
   const paid = booking.paid;
+  const isPenalty = booking.penalty_fee;
 
   useEffect(() => {
     if (!open) return;
@@ -41,7 +42,8 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
     setErr(null);
     setOkMsg(null);
     start(async () => {
-      const res = await togglePaidAction({ bookingId: booking.booking_id, paid: nextPaid, method });
+      const action = isPenalty ? togglePenaltyPaidAction : togglePaidAction;
+      const res = await action({ bookingId: booking.booking_id, paid: nextPaid, method });
       if (res.ok) {
         setOkMsg(nextPaid ? `Pagó · +${CLASS_PRICE_EUR} €` : "Marcada como no pagó");
         router.refresh();
@@ -52,21 +54,38 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
     });
   }
 
+  const dotClass = isPenalty
+    ? "border-amber-600 bg-amber-400"
+    : paid
+      ? "border-green-700 bg-green-500"
+      : "border-ladrillo-deep bg-ladrillo";
+
+  const dotStateLabel = isPenalty
+    ? `baja con cargo (<24 h) · ${paid ? "cobrada" : "sin cobrar"}`
+    : paid
+      ? "cobrada"
+      : "sin cobrar";
+
   return (
     <span ref={wrapRef} className="relative inline-flex">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        title={`${dateLabel(booking)} — ${paid ? "cobrada" : "sin cobrar"}`}
-        aria-label={`Reserva del ${dateLabel(booking)}: ${paid ? "cobrada" : "sin cobrar"}. Tocá para cambiar.`}
-        className={`h-4 w-4 rounded-full border-2 transition-transform hover:scale-110 ${
-          paid ? "border-green-700 bg-green-500" : "border-ladrillo-deep bg-ladrillo"
-        }`}
-      />
+        title={`${dateLabel(booking)} — ${dotStateLabel}`}
+        aria-label={`Reserva del ${dateLabel(booking)}: ${dotStateLabel}. Tocá para cambiar.`}
+        className={`h-4 w-4 rounded-full border-2 transition-transform hover:scale-110 ${dotClass}`}
+      >
+        {isPenalty && paid && <span className="sr-only">(cobrada)</span>}
+      </button>
 
       {open && (
         <div className="absolute right-0 top-6 z-30 w-56 max-w-[calc(100vw-2.5rem)] rounded-xl border border-lino bg-surface p-3 text-left text-xs shadow-soft">
-          <p className="mb-2 font-semibold text-piedra-deep">Clase del {dateLabel(booking)}</p>
+          <p className="mb-1 font-semibold text-piedra-deep">Clase del {dateLabel(booking)}</p>
+          {isPenalty && (
+            <p className="mb-2 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800">
+              Baja con menos de 24 h — se cobra la clase igual. Marcá si ya se cobró.
+            </p>
+          )}
 
           <div className="mb-2 grid grid-cols-2 gap-1.5">
             <button
@@ -89,7 +108,9 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
               aria-pressed={paid}
               className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
                 paid
-                  ? "border-green-700 bg-green-500 text-white"
+                  ? isPenalty
+                    ? "border-amber-600 bg-amber-400 text-amber-950"
+                    : "border-green-700 bg-green-500 text-white"
                   : "border-lino text-piedra hover:bg-lino-soft"
               }`}
             >
@@ -118,7 +139,9 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
             {!pending && okMsg && <span className="text-green-700">✓ {okMsg}</span>}
             {!pending && !err && !okMsg && (
               <span className="text-piedra-soft">
-                «Pagó» suma {CLASS_PRICE_EUR} € y una asistencia al panel.
+                {isPenalty
+                  ? `Esta clase se cobra igual por la baja tardía (${CLASS_PRICE_EUR} €).`
+                  : `«Pagó» suma ${CLASS_PRICE_EUR} € y una asistencia al panel.`}
               </span>
             )}
           </p>

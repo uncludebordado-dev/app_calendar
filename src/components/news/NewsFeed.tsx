@@ -3,7 +3,14 @@
 import { startTransition, useActionState, useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
-import { createNewsAction, deleteNewsAction, type NewsActionResult } from "@/app/(app)/news/actions";
+import {
+  createNewsAction,
+  deleteNewsAction,
+  markNewsSeenAction,
+  type NewsActionResult,
+} from "@/app/(app)/news/actions";
+import { PushOptIn } from "./PushOptIn";
+import { linkify } from "@/lib/linkify";
 import type { NewsEmoji, NewsPost } from "@/types/database.types";
 
 const EMOJIS: { key: NewsEmoji; char: string; label: string }[] = [
@@ -39,6 +46,10 @@ export function NewsFeed({
     const { data } = await supabase.rpc("news_feed", { p_limit: 50 });
     if (data) setPosts(data as NewsPost[]);
   }, [supabase]);
+
+  useEffect(() => {
+    markNewsSeenAction();
+  }, []);
 
   useEffect(() => {
     const channel = supabase
@@ -77,6 +88,7 @@ export function NewsFeed({
 
   return (
     <div className="space-y-4">
+      <PushOptIn />
       {isAdmin && <Composer onDone={refetch} />}
 
       {posts.length === 0 ? (
@@ -109,7 +121,7 @@ export function NewsFeed({
 
               <h2 className="mt-3 text-base font-semibold text-piedra-deep">{p.title}</h2>
               <p className="mt-1 whitespace-pre-wrap break-words text-sm text-piedra-deep/90">
-                {p.body}
+                {linkify(p.body)}
               </p>
 
               <div className="mt-3 flex flex-wrap gap-2 border-t border-lino pt-3">
@@ -182,7 +194,7 @@ function Composer({ onDone }: { onDone: () => void }) {
         onChange={(e) => setBody(e.target.value)}
         maxLength={4000}
         rows={4}
-        placeholder="Contá la novedad, el evento, la fecha…"
+        placeholder="Contá la novedad, el evento, la fecha… Podés pegar un link (p. ej. de Google Maps) y va a quedar clicable."
         className="field-input w-full"
       />
       {state.error && <p className="text-xs text-ladrillo-deep">{state.error}</p>}
