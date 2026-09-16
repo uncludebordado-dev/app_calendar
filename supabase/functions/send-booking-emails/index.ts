@@ -1,8 +1,9 @@
 // =============================================================================
 // Edge Function: send-booking-emails
 // Disparada por un Database Webhook sobre INSERT en public.email_events.
-// Tipos: booking_confirmed | booking_cancelled | user_registered
-// Envía por Resend a la alumna y/o a la admin según el tipo.
+// Tipos: booking_confirmed | booking_cancelled | user_registered | kit_reservation | ...
+// Envía por Resend solo a ADMIN_EMAIL (la cuenta no tiene dominio verificado,
+// así que Resend rechaza mandar a cualquier otra dirección).
 // Secretos vía `supabase secrets set` — nunca en el cliente.
 // =============================================================================
 
@@ -198,7 +199,6 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
       <p style="color:#77898B;font-size:13px">Aviso automático — ${label}</p>
     </div>`;
     return [
-      { to: p.student_email, subject: "🎂 ¡Este mes es tu cumpleaños!", html: bodyFor("student") },
       { to: ADMIN_EMAIL, subject: `🎂 Este mes cumple años ${p.student_name}`, html: bodyFor("admin") },
     ];
   }
@@ -221,15 +221,6 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
           <p style="${BOX}">Contactá a la alumna para coordinar la entrega y el pago en persona.</p>
         </div>`,
       },
-      {
-        to: p.student_email,
-        subject: "Recibimos tu reserva de kit ✿",
-        html: `<div style="${S}">
-          <h2 style="${H}">¡Reserva anotada!</h2>
-          <p>Hola ${name}, reservaste <b>${kitName} × ${p.quantity}</b>. La profe te va a
-          escribir para coordinar la entrega. El pago se hace en persona.</p>
-        </div>`,
-      },
     ];
   }
 
@@ -248,17 +239,6 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
           </table>
         </div>`,
       },
-      {
-        to: p.student_email,
-        subject: "¡Bienvenida al clu de bordado! ✿",
-        html: `<div style="${S}">
-          <h2 style="${H}">¡Tu cuenta está lista, ${name}!</h2>
-          <p>Ya podés entrar a la app y reservar tu lugar en la próxima clase.</p>
-          <p style="${BOX}">Recordá avisar cualquier baja con <b>48 horas</b> de anticipación
-          para liberar el lugar y no sumar una sanción.</p>
-          <p style="color:#77898B;font-size:13px">un clu de bordado — reuniones, hilo y comunidad.</p>
-        </div>`,
-      },
     ];
   }
 
@@ -266,20 +246,6 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
 
   if (ev.type === "booking_confirmed") {
     return [
-      {
-        to: p.student_email,
-        subject: "Tu lugar en el clu está reservado ✿",
-        html: `<div style="${S}">
-          <h2 style="${H}">¡Reserva confirmada!</h2>
-          <p>Hola ${name}, te esperamos en el taller de bordado.</p>
-          <table style="border-collapse:collapse;margin:16px 0">
-            <tr><td style="padding:4px 12px 4px 0"><b>Día</b></td><td>${when}</td></tr>
-            ${p.notes ? `<tr><td style="padding:4px 12px 4px 0"><b>Tema</b></td><td>${escapeHtml(p.notes)}</td></tr>` : ""}
-          </table>
-          <p style="${BOX}">Si no vas a poder venir, avisá la baja desde la app con al menos
-          <b>48 horas</b> de anticipación.</p>
-        </div>`,
-      },
       {
         to: ADMIN_EMAIL,
         subject: `Nueva reserva — ${p.student_name} (${longDate(p.class_date)} ${p.start_time})`,
@@ -300,21 +266,6 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
   const late = p.late_cancellation === true || p.late_cancellation === "true";
   const penalty = p.penalty_fee === true || p.penalty_fee === "true";
   return [
-    {
-      to: p.student_email,
-      subject: penalty ? "Cancelamos tu reserva — se cobra la clase" : "Cancelamos tu reserva del clu",
-      html: `<div style="${S}">
-        <h2 style="${H}">Reserva cancelada</h2>
-        <p>Hola ${name}, dimos de baja tu lugar para el ${when}.</p>
-        ${
-          penalty
-            ? `<p style="${BOX}">Como la baja fue con menos de 24 horas, la clase se cobra igual (10 €).</p>`
-            : late
-              ? `<p style="${BOX}">Como la cancelación fue con menos de 48 horas, se registró una sanción.</p>`
-              : `<p>¡Gracias por avisar con tiempo!</p>`
-        }
-      </div>`,
-    },
     {
       to: ADMIN_EMAIL,
       subject: `Baja de reserva — ${p.student_name} (${longDate(p.class_date)} ${p.start_time})`,
