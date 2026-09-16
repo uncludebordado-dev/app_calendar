@@ -44,7 +44,7 @@ export default async function MisReservasPage() {
         <div>
           <h1 className="text-xl font-semibold">Mis reservas</h1>
           <p className="mt-1 text-sm text-piedra">
-            Cancelá con más de 48 h para no sumar una sanción.
+            Si cancelás con menos de 24 hs de anticipación se te cobrará la clase en su totalidad.
           </p>
         </div>
         <ButtonLink href={ROUTES.calendario} variant="ghost" size="md">

@@ -128,15 +128,15 @@ export default async function CalendarioPage({
 
       {profile.blocked && (
         <Alert tone="error" title="Cuenta bloqueada para reservar">
-          Acumulaste {STRIKE_BLOCK_THRESHOLD} sanciones por cancelaciones tardías o
-          inasistencias. Escribinos por Instagram para reactivarla.
+          Acumulaste {STRIKE_BLOCK_THRESHOLD} sanciones por inasistencias.
+          Escribinos por Instagram para reactivarla.
         </Alert>
       )}
 
       {!profile.blocked && profile.strikes > 0 && (
         <Alert tone="warning">
-          Tenés {profile.strikes} {profile.strikes === 1 ? "sanción" : "sanciones"}. A las{" "}
-          {STRIKE_BLOCK_THRESHOLD} se bloquea la reserva. Cancelá siempre con más de 48 h.
+          Tenés {profile.strikes} {profile.strikes === 1 ? "sanción" : "sanciones"} por
+          inasistencia. A las {STRIKE_BLOCK_THRESHOLD} se bloquea la reserva.
         </Alert>
       )}
 
