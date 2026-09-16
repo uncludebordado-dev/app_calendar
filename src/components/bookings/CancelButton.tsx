@@ -9,11 +9,9 @@ import { cancelBookingAction } from "@/app/(app)/mis-reservas/actions";
 export function CancelButton({
   bookingId,
   withinFreeWindow,
-  willChargeFee,
 }: {
   bookingId: string;
   withinFreeWindow: boolean;
-  willChargeFee: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -44,11 +42,9 @@ export function CancelButton({
   return (
     <div className="w-56 space-y-2 text-right">
       <p className="text-xs text-piedra">
-        {willChargeFee
-          ? "Recordá que al dar de baja en menos de 24 hs se te cobrará la clase de igual manera. ¿Deseás continuar?"
-          : withinFreeWindow
-            ? "¿Confirmás la baja? Se libera tu lugar."
-            : "Faltan menos de 48 h: esta baja suma una sanción. ¿Continuar?"}
+        {withinFreeWindow
+          ? "¿Confirmás la baja? Se libera tu lugar."
+          : "Falta menos de 48 hs. Esta baja se te cobrará igual que una clase. ¿Continuar?"}
       </p>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="md" type="button" onClick={() => setConfirming(false)}>

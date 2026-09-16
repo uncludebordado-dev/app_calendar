@@ -6,8 +6,8 @@ import type { AvailabilitySlot, Profile } from "@/types/database.types";
  * Reglas de cancelación / sanción (única fuente de verdad para la UI;
  * el servidor las re‑valida en cancel_booking()).
  *
- *  - Cancelar con +48h  -> libera cupo, sin penalidad.
- *  - Cancelar con -48h  -> libera cupo + 1 strike.
+ *  - Cancelar con +48h  -> libera cupo, sin cobro.
+ *  - Cancelar con -48h  -> libera cupo + se cobra la clase (10 €), sin strike.
  *  - No presentarse     -> 1 strike (lo marca la admin).
  *  - 3 strikes          -> bloqueo automático de nuevas reservas.
  */

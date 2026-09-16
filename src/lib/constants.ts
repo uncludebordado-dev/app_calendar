@@ -6,13 +6,11 @@ export const TIMEZONE = "Europe/Madrid";
 /** Cupo máximo por franja (regla del taller). */
 export const MAX_CAPACITY = 6;
 
-/** Horas de anticipación para cancelar sin sanción. */
+/** Horas de anticipación para cancelar sin cobro. Debajo de este umbral, la
+ *  baja igual cobra la clase completa (10 €). */
 export const FREE_CANCEL_HOURS = 48;
 
-/** Debajo de este umbral, la baja igual cobra la clase completa. */
-export const LATE_FEE_HOURS = 24;
-
-/** Strikes que provocan el bloqueo automático de reservas. */
+/** Strikes que provocan el bloqueo automático de reservas (solo por inasistencia, marcada por la admin). */
 export const STRIKE_BLOCK_THRESHOLD = 3;
 
 export const INSTAGRAM_URL = "https://instagram.com/uncludebordado";
