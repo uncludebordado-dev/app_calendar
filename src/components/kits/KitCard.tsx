@@ -5,7 +5,19 @@ import { reserveKitAction } from "@/app/(app)/reserva-kit/actions";
 import { Alert } from "@/components/ui/Alert";
 import { KIT_ACCENT, type KitInfo } from "@/lib/kits";
 
-function KitArt({ accent }: { accent: string }) {
+const money = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
+
+function KitArt({ accent, photoUrl, name }: { accent: string; photoUrl: string | null; name: string }) {
+  if (photoUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={photoUrl}
+        alt={name}
+        className="h-28 w-full rounded-xl object-cover"
+      />
+    );
+  }
   return (
     <div className={`flex h-28 items-center justify-center rounded-xl ${accent}`}>
       <svg viewBox="0 0 64 64" className="h-16 w-16 text-ladrillo-deep" fill="none" stroke="currentColor" strokeWidth="2">
@@ -36,10 +48,17 @@ export function KitCard({ kit }: { kit: KitInfo }) {
 
   return (
     <div className="card space-y-3 p-4">
-      <KitArt accent={KIT_ACCENT[kit.id]} />
-      <div>
-        <h2 className="text-base font-semibold text-piedra-deep">{kit.name}</h2>
-        <p className="text-sm text-piedra">{kit.tagline}</p>
+      <KitArt accent={KIT_ACCENT[kit.id]} photoUrl={kit.photoUrl} name={kit.name} />
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-piedra-deep">{kit.name}</h2>
+          <p className="text-sm text-piedra">{kit.tagline}</p>
+        </div>
+        {kit.priceEur != null && (
+          <p className="shrink-0 text-lg font-semibold text-ladrillo-deep">
+            {money.format(kit.priceEur)}
+          </p>
+        )}
       </div>
       <ul className="space-y-1 text-sm text-piedra-deep">
         {kit.items.map((it) => (

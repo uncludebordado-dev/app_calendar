@@ -1,4 +1,5 @@
 import { formatLongDate } from "@/lib/date";
+import { catalanHoliday } from "@/lib/holidays";
 import type { CalendarSlot } from "@/lib/calendar";
 import { SlotCard } from "./SlotCard";
 
@@ -14,6 +15,7 @@ export function DayPanel({
   birthdayNames?: string[];
 }) {
   const sorted = [...slots].sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const holiday = catalanHoliday(dateKey);
 
   return (
     <section aria-live="polite" className="space-y-3">
@@ -25,6 +27,12 @@ export function DayPanel({
         <p className="rounded-xl bg-miel/25 px-4 py-2.5 text-sm text-piedra-deep">
           🎂 {birthdayNames.length === 1 ? "Cumpleaños de" : "Cumpleaños de"}{" "}
           <b>{birthdayNames.join(", ")}</b>
+        </p>
+      )}
+
+      {holiday && (
+        <p className="rounded-xl bg-piedra/15 px-4 py-2.5 text-sm text-piedra-deep">
+          Festivo en Catalunya: <b>{holiday}</b>
         </p>
       )}
 

@@ -185,6 +185,8 @@ export type KitRow = {
   name: string;
   tagline: string;
   items: string[];
+  price_eur: number | null;
+  photo_url: string | null;
   sort_order: number;
   updated_at: string;
 };
@@ -466,6 +468,10 @@ export type Database = {
       enqueue_birthday_month_notices: {
         Args: Record<string, never>;
         Returns: number;
+      };
+      enqueue_monthly_report: {
+        Args: Record<string, never>;
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

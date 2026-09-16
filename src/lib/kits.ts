@@ -5,6 +5,8 @@ export interface KitInfo {
   name: string;
   tagline: string;
   items: string[];
+  priceEur: number | null;
+  photoUrl: string | null;
 }
 
 /** Fondo del ilustrativo por kit — es sólo estética, no forma parte de la info editable. */

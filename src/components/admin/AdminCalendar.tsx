@@ -4,6 +4,7 @@ import { startTransition, useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { buildMonthGrid, MONTH_NAMES_ES, WEEKDAY_LABELS_ES, formatLongDate } from "@/lib/date";
+import { catalanHoliday } from "@/lib/holidays";
 import { createSlotAction, type AdminActionResult } from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
 import { MAX_CAPACITY } from "@/lib/constants";
@@ -74,6 +75,7 @@ export function AdminCalendar({
             const count = slotsByDay[cell.dateKey]?.length ?? 0;
             const bdays = cell.inMonth ? birthdaysByDay[cell.day] ?? [] : [];
             const isSel = cell.dateKey === selected;
+            const holiday = cell.inMonth ? catalanHoliday(cell.dateKey) : null;
             return (
               <button
                 key={cell.dateKey}
@@ -81,9 +83,11 @@ export function AdminCalendar({
                 disabled={!cell.inMonth}
                 onClick={() => { setSelected(cell.dateKey); setShowForm(false); }}
                 aria-pressed={isSel}
+                title={holiday ?? undefined}
                 className={[
                   "relative flex aspect-square flex-col items-center justify-center bg-crema text-sm transition-colors",
                   !cell.inMonth && "text-piedra-soft/40",
+                  holiday && "!bg-piedra/15",
                   cell.inMonth && "hover:bg-miel/20",
                   isSel && "!bg-miel/50 font-semibold",
                   cell.isToday && !isSel && "ring-1 ring-inset ring-miel-deep",
@@ -102,7 +106,8 @@ export function AdminCalendar({
 
       <p className="px-1 text-xs text-piedra">
         <span className="rounded bg-ladrillo px-1 text-[9px] font-semibold text-white">N</span> clases del día ·{" "}
-        🎂 cumpleaños · <Link href="/admin/horarios" className="underline">ver lista completa</Link>
+        🎂 cumpleaños · <span className="inline-block h-2.5 w-2.5 align-middle rounded bg-piedra/25" /> festivo
+        (Catalunya) · <Link href="/admin/horarios" className="underline">ver lista completa</Link>
       </p>
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
@@ -114,6 +119,11 @@ export function AdminCalendar({
         {(birthdaysByDay[Number(selected.slice(-2))] ?? []).length > 0 && (
           <p className="rounded-xl bg-miel/20 px-3 py-2 text-sm text-piedra-deep">
             🎂 Cumple: {birthdaysByDay[Number(selected.slice(-2))].join(", ")}
+          </p>
+        )}
+        {catalanHoliday(selected) && (
+          <p className="rounded-xl bg-piedra/15 px-3 py-2 text-sm text-piedra-deep">
+            Festivo en Catalunya: {catalanHoliday(selected)}
           </p>
         )}
 

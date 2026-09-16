@@ -22,8 +22,9 @@ type EmailEvent = {
     | "booking_cancelled"
     | "user_registered"
     | "birthday_month"
-    | "kit_reservation";
-  payload: Record<string, string | boolean | number>;
+    | "kit_reservation"
+    | "monthly_report";
+  payload: Record<string, unknown>;
 };
 
 const KIT_NAMES: Record<string, string> = {
@@ -60,6 +61,73 @@ function longDate(iso: string): string {
 function buildEmails(ev: EmailEvent): { to: string; subject: string; html: string }[] {
   const p = ev.payload as Record<string, string>;
   const name = escapeHtml(p.student_name ?? "");
+
+  if (ev.type === "monthly_report") {
+    type ChartPoint = { ym: string; label: string; income: number };
+    const r = ev.payload as {
+      month_label: string;
+      classes_count: number;
+      reservations_count: number;
+      attended_count: number;
+      pending_count: number;
+      new_students: number;
+      active_students: number;
+      income_month: number;
+      income_total: number;
+      chart: ChartPoint[];
+    };
+    const eur = (n: number) =>
+      new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
+
+    const maxIncome = Math.max(1, ...r.chart.map((c) => Number(c.income)));
+    const chartRows = r.chart
+      .map((c) => {
+        const pct = Math.max(4, Math.round((Number(c.income) / maxIncome) * 100));
+        return `<tr>
+          <td style="padding:3px 8px 3px 0;font-size:12px;color:#77898B;white-space:nowrap">${c.label}</td>
+          <td style="width:100%">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td style="background:#D9704A;border-radius:5px;height:14px;width:${pct}%">&nbsp;</td>
+              <td style="width:${100 - pct}%">&nbsp;</td>
+            </tr></table>
+          </td>
+          <td style="padding:3px 0 3px 8px;font-size:12px;color:#3D484A;white-space:nowrap;text-align:right">${eur(Number(c.income))}</td>
+        </tr>`;
+      })
+      .join("");
+
+    const tile = (label: string, value: string) => `
+      <td style="${BOX};width:50%" width="50%">
+        <div style="font-size:11px;color:#77898B;text-transform:uppercase;letter-spacing:.03em">${label}</div>
+        <div style="font-size:20px;font-weight:700;color:#3D484A;margin-top:2px">${value}</div>
+      </td>`;
+
+    const html = `<div style="${S}">
+      <h2 style="${H}">📊 Reporte de ${r.month_label}</h2>
+      <p>Así estuvo el clu este mes:</p>
+      <table role="presentation" width="100%" cellpadding="6" cellspacing="0" style="margin:16px 0">
+        <tr>${tile("Clases dadas", String(r.classes_count))}${tile("Alumnas nuevas", String(r.new_students))}</tr>
+        <tr><td colspan="2" style="height:8px"></td></tr>
+        <tr>${tile("Clases cobradas", String(r.attended_count))}${tile("Sin cobrar", String(r.pending_count))}</tr>
+        <tr><td colspan="2" style="height:8px"></td></tr>
+        <tr><td colspan="2" style="${BOX};background:#FBEBDE">
+          <div style="font-size:11px;color:#A5741E;text-transform:uppercase;letter-spacing:.03em">Recaudado este mes</div>
+          <div style="font-size:26px;font-weight:700;color:#B85536;margin-top:2px">${eur(r.income_month)}</div>
+        </td></tr>
+        <tr><td colspan="2" style="height:8px"></td></tr>
+        <tr><td colspan="2" style="${BOX}">
+          <div style="font-size:11px;color:#77898B;text-transform:uppercase;letter-spacing:.03em">Total recaudado histórico</div>
+          <div style="font-size:18px;font-weight:700;color:#3D484A;margin-top:2px">${eur(r.income_total)}</div>
+          <div style="font-size:12px;color:#77898B;margin-top:2px">${r.active_students} alumnas activas en total</div>
+        </td></tr>
+      </table>
+      <p style="${H};font-size:14px;margin:18px 0 6px">Ingresos, últimos 6 meses</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${chartRows}</table>
+      <p style="color:#77898B;font-size:12px;margin-top:18px">Reporte automático — un clu de bordado</p>
+    </div>`;
+
+    return [{ to: ADMIN_EMAIL, subject: `📊 Reporte de ${r.month_label}`, html }];
+  }
 
   if (ev.type === "birthday_month") {
     const label = String(p.month_label ?? "");

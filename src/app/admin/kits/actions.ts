@@ -34,10 +34,23 @@ export async function updateKitAction(
     return { ok: false, error: "Cargá al menos un ítem." };
   }
 
+  const rawPrice = String(formData.get("priceEur") ?? "").replace(",", ".").trim();
+  let priceEur: number | null = null;
+  if (rawPrice !== "") {
+    const n = Number(rawPrice);
+    if (Number.isNaN(n) || n < 0 || n > 10_000) {
+      return { ok: false, error: "Precio inválido." };
+    }
+    priceEur = n;
+  }
+
+  const rawPhoto = String(formData.get("photoUrl") ?? "").trim();
+  const photoUrl = rawPhoto && /^https:\/\/[\w.-]+\/\S+$/.test(rawPhoto) ? rawPhoto.slice(0, 500) : null;
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("kits")
-    .update({ name, tagline, items })
+    .update({ name, tagline, items, price_eur: priceEur, photo_url: photoUrl })
     .eq("id", id);
 
   if (error) return { ok: false, error: "No se pudo guardar." };

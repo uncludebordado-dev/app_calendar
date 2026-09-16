@@ -18,6 +18,8 @@ export default async function ReservaKitPage() {
     name: k.name,
     tagline: k.tagline,
     items: k.items,
+    priceEur: k.price_eur,
+    photoUrl: k.photo_url,
   }));
 
   return (

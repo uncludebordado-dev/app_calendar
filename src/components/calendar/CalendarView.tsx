@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buildMonthGrid, MONTH_NAMES_ES, WEEKDAY_LABELS_ES } from "@/lib/date";
+import { catalanHoliday } from "@/lib/holidays";
 import type { CalendarSlot } from "@/lib/calendar";
 import { DayPanel } from "./DayPanel";
 
@@ -97,7 +98,8 @@ export function CalendarView({
             const mine = (slotsByDay[cell.dateKey] ?? []).some((s) => s.bookedByMe);
             const hasAnySlots = (slotsByDay[cell.dateKey]?.length ?? 0) > 0;
             const bdays = cell.inMonth ? bdaysFor(cell.dateKey) : [];
-            const selectable = cell.inMonth && (hasAnySlots || bdays.length > 0);
+            const holiday = cell.inMonth ? catalanHoliday(cell.dateKey) : null;
+            const selectable = cell.inMonth && (hasAnySlots || bdays.length > 0 || !!holiday);
             const isSelected = cell.dateKey === selected;
 
             return (
@@ -107,13 +109,17 @@ export function CalendarView({
                 disabled={!selectable}
                 onClick={() => setSelected(cell.dateKey)}
                 aria-pressed={isSelected}
+                title={holiday ?? undefined}
                 aria-label={`${cell.day}${
                   count > 0 ? ` — ${count} horario(s) con lugar` : ""
-                }${bdays.length ? ` — cumpleaños de ${bdays.join(", ")}` : ""}`}
+                }${bdays.length ? ` — cumpleaños de ${bdays.join(", ")}` : ""}${
+                  holiday ? ` — festivo: ${holiday}` : ""
+                }`}
                 className={[
                   "relative flex aspect-square flex-col items-center justify-center bg-crema text-sm transition-colors",
                   !cell.inMonth && "text-piedra-soft/50",
                   cell.inMonth && cell.isPast && "text-piedra-soft",
+                  holiday && "!bg-piedra/15",
                   selectable && "hover:bg-miel/20",
                   isSelected && "!bg-miel/50 font-semibold",
                   cell.isToday && !isSelected && "ring-1 ring-inset ring-miel-deep",
@@ -147,6 +153,9 @@ export function CalendarView({
           <span className="h-1.5 w-1.5 rounded-full bg-piedra" /> ya reservaste
         </span>
         <span className="flex items-center gap-1.5">🎂 cumpleaños</span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded bg-piedra/25" /> festivo (Catalunya)
+        </span>
       </div>
 
       {selected ? (
