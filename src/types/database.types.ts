@@ -7,7 +7,13 @@
 
 export type BookingStatus = "confirmed" | "cancelled";
 export type ProfileRole = "alumna" | "admin";
-export type EmailEventType = "booking_confirmed" | "booking_cancelled";
+export type EmailEventType =
+  | "booking_confirmed"
+  | "booking_cancelled"
+  | "user_registered"
+  | "birthday_month"
+  | "kit_reservation"
+  | "monthly_report";
 
 export type Profile = {
   id: string;

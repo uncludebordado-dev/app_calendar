@@ -130,6 +130,22 @@ export default async function AdminDashboardPage({
         </a>
       </section>
 
+      {/* Reportes mensuales */}
+      <section className="card p-4">
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">
+          Reportes mensuales
+        </h2>
+        <p className="mb-3 text-xs text-piedra">
+          Se genera solo el último día de cada mes y también llega por mail.
+        </p>
+        <Link
+          href="/admin/reportes"
+          className="inline-flex items-center gap-2 rounded-xl border border-lino px-4 py-2.5 text-sm font-semibold text-piedra-deep hover:bg-lino-soft"
+        >
+          Ver reportes →
+        </Link>
+      </section>
+
       {/* Kits */}
       <section className="card p-4">
         <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Kits</h2>

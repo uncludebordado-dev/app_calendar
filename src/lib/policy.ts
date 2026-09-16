@@ -63,6 +63,7 @@ export const RPC_ERROR_MESSAGES: Record<string, string> = {
   already_cancelled: "Esa reserva ya estaba cancelada.",
   not_admin: "Necesitás permisos de administración.",
   rate_limited: "Hiciste demasiados intentos seguidos. Esperá un rato y probá de nuevo.",
+  alumna_exenta: "Esta alumna es exenta de pago: no se le genera ningún cobro.",
 };
 
 export function rpcErrorToMessage(raw: string | undefined | null): string {

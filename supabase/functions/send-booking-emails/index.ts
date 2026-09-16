@@ -13,6 +13,7 @@ const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "un clu de bordado <onboarding@resend.dev>";
 const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "uncludebordado@gmail.com";
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://unclu-calendar.vercel.app";
 const WEBHOOK_SECRET = Deno.env.get("EMAIL_WEBHOOK_SECRET") ?? "";
 
 type EmailEvent = {
@@ -64,6 +65,15 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
 
   if (ev.type === "monthly_report") {
     type ChartPoint = { ym: string; label: string; income: number };
+    type StudentBooking = {
+      class_date: string;
+      start_time: string;
+      status: string;
+      attended: boolean | null;
+      penalty_fee: boolean;
+      paid: boolean;
+    };
+    type StudentRow = { full_name: string; payment_exempt: boolean; bookings: StudentBooking[] };
     const r = ev.payload as {
       month_label: string;
       classes_count: number;
@@ -75,9 +85,33 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
       income_month: number;
       income_total: number;
       chart: ChartPoint[];
+      students: StudentRow[];
     };
     const eur = (n: number) =>
       new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n);
+
+    // Bolita de color por reserva: amarillo = baja <24h con cargo (cobrado o
+    // no, y aunque sea exenta), verde = asistió y está cobrada (o exenta),
+    // rojo = confirmada pero sin cobrar todavía.
+    const dotColor = (b: StudentBooking) =>
+      b.penalty_fee ? "#f59e0b" : b.paid ? "#22c55e" : "#D9704A";
+
+    const studentRows = r.students
+      .map((st) => {
+        const dots = st.bookings
+          .map(
+            (b) =>
+              `<span title="${b.class_date} ${b.start_time}" style="color:${dotColor(b)};font-size:16px;letter-spacing:1px">●</span>`,
+          )
+          .join("");
+        return `<tr>
+          <td style="padding:5px 8px 5px 0;font-size:13px;color:#3D484A;border-top:1px solid #DFD7CC">
+            ${escapeHtml(st.full_name)}${st.payment_exempt ? ' <span style="color:#77898B;font-size:11px">(exenta)</span>' : ""}
+          </td>
+          <td style="padding:5px 0;text-align:right;border-top:1px solid #DFD7CC">${dots || "—"}</td>
+        </tr>`;
+      })
+      .join("");
 
     const maxIncome = Math.max(1, ...r.chart.map((c) => Number(c.income)));
     const chartRows = r.chart
@@ -103,9 +137,16 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
       </td>`;
 
     const html = `<div style="${S}">
-      <h2 style="${H}">📊 Reporte de ${r.month_label}</h2>
-      <p>Así estuvo el clu este mes:</p>
-      <table role="presentation" width="100%" cellpadding="6" cellspacing="0" style="margin:16px 0">
+      <div style="text-align:center;margin-bottom:6px">
+        <img src="${SITE_URL}/icon-512.png" width="56" height="56" alt="un clu de bordado"
+             style="border-radius:14px;display:inline-block" />
+      </div>
+      <h1 style="${H};font-size:22px;text-align:center;margin:6px 0 0">Reporte mensual</h1>
+      <p style="text-align:center;color:#3D484A;font-size:16px;font-weight:600;margin:2px 0 18px">
+        ${r.month_label}
+      </p>
+
+      <table role="presentation" width="100%" cellpadding="6" cellspacing="0" style="margin:0 0 16px">
         <tr>${tile("Clases dadas", String(r.classes_count))}${tile("Alumnas nuevas", String(r.new_students))}</tr>
         <tr><td colspan="2" style="height:8px"></td></tr>
         <tr>${tile("Clases cobradas", String(r.attended_count))}${tile("Sin cobrar", String(r.pending_count))}</tr>
@@ -121,9 +162,25 @@ function buildEmails(ev: EmailEvent): { to: string; subject: string; html: strin
           <div style="font-size:12px;color:#77898B;margin-top:2px">${r.active_students} alumnas activas en total</div>
         </td></tr>
       </table>
+
       <p style="${H};font-size:14px;margin:18px 0 6px">Ingresos, últimos 6 meses</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${chartRows}</table>
-      <p style="color:#77898B;font-size:12px;margin-top:18px">Reporte automático — un clu de bordado</p>
+
+      <p style="${H};font-size:14px;margin:22px 0 6px">Alumnas del mes</p>
+      <p style="font-size:11px;color:#77898B;margin:0 0 8px">
+        <span style="color:#22c55e">●</span> cobrada &nbsp;
+        <span style="color:#D9704A">●</span> sin cobrar &nbsp;
+        <span style="color:#f59e0b">●</span> baja &lt;24h con cargo
+      </p>
+      ${
+        studentRows
+          ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${studentRows}</table>`
+          : `<p style="color:#77898B;font-size:13px">Sin actividad registrada este mes.</p>`
+      }
+
+      <p style="color:#77898B;font-size:12px;margin-top:18px">
+        Reporte automático — un clu de bordado · también lo podés ver desde el panel, en Admin → Reportes.
+      </p>
     </div>`;
 
     return [{ to: ADMIN_EMAIL, subject: `📊 Reporte de ${r.month_label}`, html }];
