@@ -1,8 +1,8 @@
 -- =============================================================================
--- Se elimina la franja intermedia de "sanción" para bajas entre 24 y 48 hs.
--- Regla nueva, única: +48h antes = gratis. -48h antes = se cobra la clase
--- (10 €) igual, sin sumar sanción. Las sanciones (strikes) ahora solo las
--- pone la admin manualmente por inasistencia.
+-- Se elimina la sanción (strike) automática por cancelar tarde.
+-- Regla única: +24h antes = gratis. -24h antes = se cobra la clase (10 €)
+-- igual, sin sumar sanción. Las sanciones (strikes) ahora solo las pone la
+-- admin manualmente por inasistencia.
 -- =============================================================================
 
 create or replace function public.cancel_booking(p_booking_id uuid)
@@ -39,11 +39,10 @@ begin
   v_hours   := extract(epoch from (
     (v_slot.class_date + v_slot.start_time) - (now() at time zone 'Europe/Madrid')
   )) / 3600.0;
-  v_late    := v_hours < 48;
+  v_late    := v_hours < 24;
   -- La marca (bolita amarilla / cobro) es igual para todas; lo que varía por
   -- exención es si eso genera o no un cobro real (ver admin_toggle_penalty_paid).
-  -- Ya no se cobra distinto según 24h vs 48h: cualquier baja de -48h cobra.
-  v_penalty := v_hours < 48 and v_booking.user_id = v_uid;
+  v_penalty := v_hours < 24 and v_booking.user_id = v_uid;
 
   update public.bookings
      set status            = 'cancelled',

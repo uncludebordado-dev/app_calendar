@@ -44,7 +44,7 @@ export function CancelButton({
       <p className="text-xs text-piedra">
         {withinFreeWindow
           ? "¿Confirmás la baja? Se libera tu lugar."
-          : "Falta menos de 48 hs. Esta baja se te cobrará igual que una clase. ¿Continuar?"}
+          : "Falta menos de 24 hs. Esta baja se te cobrará igual que una clase. ¿Continuar?"}
       </p>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="md" type="button" onClick={() => setConfirming(false)}>

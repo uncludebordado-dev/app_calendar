@@ -50,7 +50,7 @@ export function BookingRow({
             )}
             {booking.penalty_fee && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">
-                Baja tardía · se cobró la clase
+                Baja &lt;24 h · se cobró la clase
               </span>
             )}
             {booking.no_show && (
