@@ -34,11 +34,8 @@ export function LoginForm({ next, authError }: { next?: string; authError?: stri
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h1 className="text-xl font-semibold">¡Hola de nuevo!</h1>
-        <p className="mt-1 text-sm text-piedra">Un club para bordar, compartir y hacer red.</p>
-        <p className="mt-1 text-xs text-piedra-soft">
-          Elegí el día que te quede cómodo y guardá tu lugar en la mesa · Grupos reducidos
-        </p>
+        <h1 className="text-xl font-semibold">Hola de nuevo</h1>
+        <p className="mt-1 text-sm text-piedra">Entrá para reservar o ver tus clases.</p>
       </div>
 
       {GOOGLE_AUTH_ENABLED && (

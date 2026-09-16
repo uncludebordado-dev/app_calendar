@@ -16,13 +16,11 @@ export default function HomePage() {
       <StitchDivider className="mt-8" />
 
       <h1 className="mt-6 text-2xl font-semibold leading-snug">
-        Un club para bordar
-        <span className="block text-piedra">reuniones, hilo y comunidad</span>
+        Un club para bordar, compartir y hacer red
       </h1>
 
       <p className="mt-3 text-sm text-piedra">
-        Elegí el día que te queda cómodo y guardá tu lugar en la mesa. Grupos
-        chicos, mate y bastidor.
+        Elegí el día que te quede cómodo y guardá tu lugar en la mesa · Grupos reducidos
       </p>
 
       <div className="mt-10 flex w-full flex-col gap-3">
