@@ -26,15 +26,17 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const { year, month } = parseMonthParam(searchParams.get("mes") ?? undefined, todayKey());
-  const { from, to } = monthRange(year, month);
+  const mesParam = searchParams.get("mes") ?? undefined;
+  const todos = mesParam === "todos";
+  const { year, month } = parseMonthParam(todos ? undefined : mesParam, todayKey());
+  const { from, to } = todos ? { from: "1970-01-01", to: "2999-12-31" } : monthRange(year, month);
 
   const supabase = await createClient();
   const { data } = await supabase.rpc("admin_students_overview", { p_from: from, p_to: to });
   const students = (data ?? []) as StudentOverviewRow[];
 
   const rows: (string | number)[][] = [
-    [`un clu de bordado — ${MONTH_NAMES_ES[month]} ${year}`],
+    [todos ? "un clu de bordado — todos los meses" : `un clu de bordado — ${MONTH_NAMES_ES[month]} ${year}`],
     [],
     ["Alumna", "Email", "Teléfono", "Fecha clase", "Hora", "Asistió", "Pagó", "Monto (€)"],
   ];
@@ -74,7 +76,9 @@ export async function GET(request: Request) {
   rows.push(["Alumnas registradas", students.length]);
 
   const body = csv(rows);
-  const filename = `clu-bordado_${year}-${String(month + 1).padStart(2, "0")}.csv`;
+  const filename = todos
+    ? "clu-bordado_todos-los-meses.csv"
+    : `clu-bordado_${year}-${String(month + 1).padStart(2, "0")}.csv`;
 
   return new Response(body, {
     headers: {

@@ -39,13 +39,20 @@ export default async function AdminDashboardPage({
   const { from, to } = monthRange(year, month);
 
   const supabase = await createClient();
-  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: allPayments }] =
+  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: allPayments }, { data: lastSlot }] =
     await Promise.all([
       supabase.rpc("admin_month_totals", { p_from: from, p_to: to }),
       supabase.rpc("admin_students_by_month", { p_months: 12 }),
       supabase.rpc("admin_upcoming_birthdays", { p_days: 30 }),
       // Total histórico: TODO el dinero cobrado, sin importar el mes.
       supabase.from("payments").select("amount"),
+      // Último mes con clases agendadas, para no cortar el selector antes de tiempo.
+      supabase
+        .from("availability_slots")
+        .select("class_date")
+        .order("class_date", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
 
   const t = ((totalsData ?? [])[0] ?? {
@@ -59,6 +66,26 @@ export default async function AdminDashboardPage({
   const chart = ((byMonth ?? []) as StudentsByMonthRow[]).map((r) => ({ ym: r.ym, value: r.cumulative }));
   const birthdays = (bdays ?? []) as UpcomingBirthday[];
   const ym = `${year}-${String(month + 1).padStart(2, "0")}`;
+
+  // Meses disponibles para exportar: desde el arranque del sistema (set. 2026)
+  // hasta el último mes con clases agendadas (o el actual, lo que sea más lejano).
+  const SYSTEM_START = { year: 2026, month: 8 }; // setiembre = índice 8
+  const lastClassDate = (lastSlot as { class_date?: string } | null)?.class_date;
+  const lastYm = lastClassDate ? lastClassDate.slice(0, 7) : ym;
+  const endYm = lastYm > ym ? lastYm : ym;
+  const [endYear, endMonth1] = endYm.split("-").map(Number);
+  const monthOptions: { value: string; label: string }[] = [];
+  for (let y = endYear, m = endMonth1 - 1; y > SYSTEM_START.year || (y === SYSTEM_START.year && m >= SYSTEM_START.month); ) {
+    monthOptions.push({
+      value: `${y}-${String(m + 1).padStart(2, "0")}`,
+      label: `${MONTH_NAMES_ES[m][0].toUpperCase()}${MONTH_NAMES_ES[m].slice(1)} ${y}`,
+    });
+    m -= 1;
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -118,16 +145,29 @@ export default async function AdminDashboardPage({
       <section className="card p-4">
         <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Exportar</h2>
         <p className="mb-3 text-xs text-piedra">
-          Descargá las asistencias y el dinero de {" "}
-          <span className="capitalize">{formatLongDate(`${ym}-01`).split(" ").slice(-2).join(" ")}</span>{" "}
-          en una planilla (se abre con Excel).
+          Descargá las asistencias y el dinero en una planilla (se abre con Excel). Elegí el mes o
+          descargá todo junto.
         </p>
-        <a
-          href={`/admin/export?mes=${ym}`}
-          className="inline-flex items-center gap-2 rounded-xl bg-ladrillo px-4 py-2.5 text-sm font-semibold text-white"
-        >
-          Descargar planilla del mes
-        </a>
+        <form action="/admin/export" method="GET" className="flex flex-wrap items-center gap-2">
+          <select
+            name="mes"
+            defaultValue={ym}
+            className="min-w-0 flex-1 rounded-xl border border-lino bg-surface px-3 py-2.5 text-sm text-piedra-deep"
+          >
+            <option value="todos">Todos los meses</option>
+            {monthOptions.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="inline-flex items-center gap-2 rounded-xl bg-ladrillo px-4 py-2.5 text-sm font-semibold text-white"
+          >
+            Descargar
+          </button>
+        </form>
       </section>
 
       {/* Reportes mensuales */}
