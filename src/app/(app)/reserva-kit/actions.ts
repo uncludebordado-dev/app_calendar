@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { isKitId } from "@/lib/kits";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export interface KitActionResult {
   ok: boolean;
@@ -21,6 +22,10 @@ export async function reserveKitAction(input: {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Tenés que iniciar sesión." };
+
+  if (!(await checkRateLimit("kit", user.id))) {
+    return { ok: false, error: "Hiciste demasiados pedidos seguidos. Esperá un rato y probá de nuevo." };
+  }
 
   const { error } = await supabase.from("kit_orders").insert({
     user_id: user.id,

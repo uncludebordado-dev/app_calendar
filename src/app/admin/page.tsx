@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { todayKey, formatLongDate, MONTH_NAMES_ES } from "@/lib/date";
 import { parseMonthParam, monthRange } from "@/lib/calendar";
+import { SEASON_START_YEAR, SEASON_START_MONTH } from "@/lib/constants";
 import { MonthNav } from "@/components/admin/MonthNav";
 import { BarChart } from "@/components/admin/BarChart";
 import { signOutAction } from "@/app/(auth)/actions";
@@ -69,13 +70,16 @@ export default async function AdminDashboardPage({
 
   // Meses disponibles para exportar: desde el arranque del sistema (set. 2026)
   // hasta el último mes con clases agendadas (o el actual, lo que sea más lejano).
-  const SYSTEM_START = { year: 2026, month: 8 }; // setiembre = índice 8
   const lastClassDate = (lastSlot as { class_date?: string } | null)?.class_date;
   const lastYm = lastClassDate ? lastClassDate.slice(0, 7) : ym;
   const endYm = lastYm > ym ? lastYm : ym;
   const [endYear, endMonth1] = endYm.split("-").map(Number);
   const monthOptions: { value: string; label: string }[] = [];
-  for (let y = endYear, m = endMonth1 - 1; y > SYSTEM_START.year || (y === SYSTEM_START.year && m >= SYSTEM_START.month); ) {
+  for (
+    let y = endYear, m = endMonth1 - 1;
+    y > SEASON_START_YEAR || (y === SEASON_START_YEAR && m >= SEASON_START_MONTH);
+
+  ) {
     monthOptions.push({
       value: `${y}-${String(m + 1).padStart(2, "0")}`,
       label: `${MONTH_NAMES_ES[m][0].toUpperCase()}${MONTH_NAMES_ES[m].slice(1)} ${y}`,

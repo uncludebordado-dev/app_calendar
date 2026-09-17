@@ -28,6 +28,8 @@ export const RATE_LIMITS = {
   signup: { max: 5, windowSeconds: 60 * 60 }, // 5 registros / hora / IP
   login: { max: 10, windowSeconds: 15 * 60 }, // 10 intentos de login / 15 min / IP
   booking: { max: 12, windowSeconds: 60 * 60 }, // 12 reservas o intentos / hora / usuaria
+  cancel: { max: 12, windowSeconds: 60 * 60 }, // 12 cancelaciones / hora / usuaria
+  kit: { max: 6, windowSeconds: 60 * 60 }, // 6 pedidos de kit / hora / usuaria
 } as const;
 
 /**
