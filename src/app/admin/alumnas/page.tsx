@@ -33,10 +33,14 @@ export default async function AdminAlumnasPage({
   const { data, error } = await supabase.rpc("admin_students_overview", { p_from: from, p_to: to });
   const rows = (data ?? []) as StudentOverviewRow[];
 
-  const totalCobradas = rows.reduce(
-    (n, s) => n + s.bookings.filter((b) => b.paid).length,
-    0,
+  // Las "cobradas" de una alumna exenta no generan dinero real (ver EXENTA
+  // más abajo) — no cuentan para este total, que debe coincidir con el
+  // ingreso real del mes que muestra el dashboard.
+  const paidBookings = rows.flatMap((s) =>
+    s.payment_exempt ? [] : s.bookings.filter((b) => b.paid),
   );
+  const totalCobradas = paidBookings.length;
+  const totalRecaudado = paidBookings.reduce((n, b) => n + (Number(b.amount) || CLASS_PRICE_EUR), 0);
 
   return (
     <div className="space-y-4">
@@ -72,8 +76,7 @@ export default async function AdminAlumnasPage({
         </span>
         {totalCobradas > 0 && (
           <span className="text-piedra-deep">
-            {totalCobradas} cobrada{totalCobradas === 1 ? "" : "s"} ·{" "}
-            {money.format(totalCobradas * CLASS_PRICE_EUR)}
+            {totalCobradas} cobrada{totalCobradas === 1 ? "" : "s"} · {money.format(totalRecaudado)}
           </span>
         )}
       </div>
