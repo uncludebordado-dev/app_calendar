@@ -118,13 +118,19 @@ export default async function AdminAlumnasPage({
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-piedra">
                     {s.bookings.length > 0 && (
                       <span>
-                        {cobradas}/{s.bookings.length} cobradas
-                        {cobradas > 0 && (
+                        {s.payment_exempt ? (
+                          <b className="text-piedra-deep">EXENTA</b>
+                        ) : (
                           <>
-                            {" · "}
-                            <b className="text-piedra-deep">
-                              {money.format(cobradas * CLASS_PRICE_EUR)}
-                            </b>
+                            {cobradas}/{s.bookings.length} cobradas
+                            {cobradas > 0 && (
+                              <>
+                                {" · "}
+                                <b className="text-piedra-deep">
+                                  {money.format(cobradas * CLASS_PRICE_EUR)}
+                                </b>
+                              </>
+                            )}
                           </>
                         )}
                       </span>
