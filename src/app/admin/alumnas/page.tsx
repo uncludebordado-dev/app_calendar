@@ -106,7 +106,9 @@ export default async function AdminAlumnasPage({
                     {s.bookings.length === 0 ? (
                       <span className="text-[11px] text-piedra-soft">sin clases</span>
                     ) : (
-                      s.bookings.map((b) => <StudentDot key={b.booking_id} booking={b} />)
+                      s.bookings.map((b) => (
+                        <StudentDot key={b.booking_id} booking={b} exempt={s.payment_exempt} />
+                      ))
                     )}
                   </div>
                 </div>

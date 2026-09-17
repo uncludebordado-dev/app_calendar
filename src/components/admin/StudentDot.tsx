@@ -16,7 +16,13 @@ function dateLabel(b: OverviewBooking): string {
   return `${b.class_date} · ${b.start_time} h`;
 }
 
-export function StudentDot({ booking }: { booking: OverviewBooking }) {
+export function StudentDot({
+  booking,
+  exempt = false,
+}: {
+  booking: OverviewBooking;
+  exempt?: boolean;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
@@ -27,6 +33,10 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
 
   const paid = booking.paid;
   const isPenalty = booking.penalty_fee;
+  // Exenta: sin cobro real. Para la clase normal, la bolita marca sólo
+  // asistencia. Para una baja tardía, no hay nada que cobrar ni que tocar.
+  const exemptAttendance = exempt && !isPenalty;
+  const exemptPenalty = exempt && isPenalty;
 
   useEffect(() => {
     if (!open) return;
@@ -45,7 +55,15 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
       const action = isPenalty ? togglePenaltyPaidAction : togglePaidAction;
       const res = await action({ bookingId: booking.booking_id, paid: nextPaid, method });
       if (res.ok) {
-        setOkMsg(nextPaid ? `Pagó · +${CLASS_PRICE_EUR} €` : "Marcada como no pagó");
+        setOkMsg(
+          exemptAttendance
+            ? nextPaid
+              ? "Asistió"
+              : "Marcada como no asistió"
+            : nextPaid
+              ? `Pagó · +${CLASS_PRICE_EUR} €`
+              : "Marcada como no pagó",
+        );
         router.refresh();
         setTimeout(() => setOpen(false), 650);
       } else {
@@ -61,10 +79,16 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
       : "border-ladrillo-deep bg-ladrillo";
 
   const dotStateLabel = isPenalty
-    ? `baja con cargo (<24 h) · ${paid ? "cobrada" : "sin cobrar"}`
-    : paid
-      ? "cobrada"
-      : "sin cobrar";
+    ? exemptPenalty
+      ? "baja tardía · exenta, sin cobro"
+      : `baja con cargo (<24 h) · ${paid ? "cobrada" : "sin cobrar"}`
+    : exemptAttendance
+      ? paid
+        ? "asistió"
+        : "no asistió"
+      : paid
+        ? "cobrada"
+        : "sin cobrar";
 
   return (
     <span ref={wrapRef} className="relative inline-flex">
@@ -81,70 +105,83 @@ export function StudentDot({ booking }: { booking: OverviewBooking }) {
       {open && (
         <div className="absolute right-0 top-6 z-30 w-56 max-w-[calc(100vw-2.5rem)] rounded-xl border border-lino bg-surface p-3 text-left text-xs shadow-soft">
           <p className="mb-1 font-semibold text-piedra-deep">Clase del {dateLabel(booking)}</p>
-          {isPenalty && (
-            <p className="mb-2 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800">
-              Baja con menos de 24 h — se cobra la clase igual. Marcá si ya se cobró.
+
+          {exemptPenalty ? (
+            <p className="rounded-lg bg-lino-soft px-2 py-1.5 text-[11px] font-medium text-piedra">
+              Alumna exenta de pago: esta baja tardía no genera ningún cobro.
             </p>
+          ) : (
+            <>
+              {isPenalty && (
+                <p className="mb-2 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-800">
+                  Baja con menos de 24 h — se cobra la clase igual. Marcá si ya se cobró.
+                </p>
+              )}
+
+              <div className="mb-2 grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => apply(false)}
+                  disabled={pending}
+                  aria-pressed={!paid}
+                  className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
+                    !paid
+                      ? "border-ladrillo-deep bg-ladrillo text-white"
+                      : "border-lino text-piedra hover:bg-lino-soft"
+                  }`}
+                >
+                  {exemptAttendance ? "No asistió" : "No pagó"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => apply(true)}
+                  disabled={pending}
+                  aria-pressed={paid}
+                  className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
+                    paid
+                      ? isPenalty
+                        ? "border-amber-600 bg-amber-400 text-amber-950"
+                        : "border-green-700 bg-green-500 text-white"
+                      : "border-lino text-piedra hover:bg-lino-soft"
+                  }`}
+                >
+                  {exemptAttendance ? "Asistió" : "Pagó"}
+                </button>
+              </div>
+
+              {!exemptAttendance && (
+                <label className="mb-1 block text-piedra">
+                  Medio de pago
+                  <select
+                    value={method}
+                    onChange={(e) => setMethod(e.target.value)}
+                    className="mt-0.5 w-full rounded-lg border border-lino bg-surface px-2 py-1"
+                  >
+                    {METHODS.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              <p className="mt-1 min-h-[1rem] text-[11px]" aria-live="polite">
+                {pending && <span className="text-piedra">Guardando…</span>}
+                {!pending && err && <span className="text-ladrillo-deep">{err}</span>}
+                {!pending && okMsg && <span className="text-green-700">✓ {okMsg}</span>}
+                {!pending && !err && !okMsg && (
+                  <span className="text-piedra-soft">
+                    {exemptAttendance
+                      ? "Alumna exenta de pago: esto solo marca asistencia."
+                      : isPenalty
+                        ? `Esta clase se cobra igual por la baja tardía (${CLASS_PRICE_EUR} €).`
+                        : `«Pagó» suma ${CLASS_PRICE_EUR} € y una asistencia al panel.`}
+                  </span>
+                )}
+              </p>
+            </>
           )}
-
-          <div className="mb-2 grid grid-cols-2 gap-1.5">
-            <button
-              type="button"
-              onClick={() => apply(false)}
-              disabled={pending}
-              aria-pressed={!paid}
-              className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
-                !paid
-                  ? "border-ladrillo-deep bg-ladrillo text-white"
-                  : "border-lino text-piedra hover:bg-lino-soft"
-              }`}
-            >
-              No pagó
-            </button>
-            <button
-              type="button"
-              onClick={() => apply(true)}
-              disabled={pending}
-              aria-pressed={paid}
-              className={`rounded-lg border px-2 py-2 font-semibold uppercase transition-colors disabled:opacity-50 ${
-                paid
-                  ? isPenalty
-                    ? "border-amber-600 bg-amber-400 text-amber-950"
-                    : "border-green-700 bg-green-500 text-white"
-                  : "border-lino text-piedra hover:bg-lino-soft"
-              }`}
-            >
-              Pagó
-            </button>
-          </div>
-
-          <label className="mb-1 block text-piedra">
-            Medio de pago
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-              className="mt-0.5 w-full rounded-lg border border-lino bg-surface px-2 py-1"
-            >
-              {METHODS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <p className="mt-1 min-h-[1rem] text-[11px]" aria-live="polite">
-            {pending && <span className="text-piedra">Guardando…</span>}
-            {!pending && err && <span className="text-ladrillo-deep">{err}</span>}
-            {!pending && okMsg && <span className="text-green-700">✓ {okMsg}</span>}
-            {!pending && !err && !okMsg && (
-              <span className="text-piedra-soft">
-                {isPenalty
-                  ? `Esta clase se cobra igual por la baja tardía (${CLASS_PRICE_EUR} €).`
-                  : `«Pagó» suma ${CLASS_PRICE_EUR} € y una asistencia al panel.`}
-              </span>
-            )}
-          </p>
         </div>
       )}
     </span>

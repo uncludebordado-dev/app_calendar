@@ -168,6 +168,7 @@ export type StudentOverviewRow = {
   registered_on: string;
   strikes: number;
   blocked: boolean;
+  payment_exempt: boolean;
   bookings: OverviewBooking[];
 };
 

@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "un clu de bordado — reservá tu clase",
   description:
-    "Club de bordado: reuniones, hilo y comunidad. Reservá tu lugar en la próxima clase.",
+    "Un clu para bordar, compartir y hacer red. Reservá tu lugar en la próxima clase.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   applicationName: "un clu de bordado",
   appleWebApp: {
