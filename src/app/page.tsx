@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ButtonLink } from "@/components/ui/Button";
 import { Logo } from "@/components/layout/Logo";
 import { StitchDivider } from "@/components/layout/StitchDivider";
+import { Faq } from "@/components/landing/Faq";
 import { INSTAGRAM_URL, ROUTES } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default function HomePage() {
         >
           ¡CONOCENOS!
         </ButtonLink>
+        <Faq />
       </div>
 
       <p className="mt-8 text-xs text-piedra-soft">
