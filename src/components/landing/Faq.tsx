@@ -51,7 +51,7 @@ export function Faq() {
         aria-controls="faq-list"
         onClick={() => setOpen((v) => !v)}
       >
-        FAQS
+        PREGUNTAS FRECUENTES
       </Button>
 
       {open && (
