@@ -7,21 +7,18 @@ import {
   parsePhoneNumberFromString,
   type CountryCode,
 } from "libphonenumber-js";
+import { useT } from "@/components/i18n/LangProvider";
 
 const PRIORITY: CountryCode[] = [
   "ES", "AR", "UY", "CL", "MX", "CO", "PE", "BR", "US", "IT", "FR", "DE", "GB", "PT",
 ];
 
-let displayNames: Intl.DisplayNames | null = null;
-try {
-  displayNames = new Intl.DisplayNames(["es"], { type: "region" });
-} catch {
-  displayNames = null;
-}
-
-function countryLabel(c: CountryCode): string {
-  const name = displayNames?.of(c) ?? c;
-  return `${name} (+${getCountryCallingCode(c)})`;
+function makeDisplayNames(lang: string): Intl.DisplayNames | null {
+  try {
+    return new Intl.DisplayNames([lang], { type: "region" });
+  } catch {
+    return null;
+  }
 }
 
 interface Props {
@@ -33,6 +30,10 @@ interface Props {
 }
 
 export function PhoneInput({ label, value, onChange, error, hint }: Props) {
+  const { t, lang } = useT();
+  const displayNames = useMemo(() => makeDisplayNames(lang), [lang]);
+  const countryLabel = (c: CountryCode) =>
+    `${displayNames?.of(c) ?? c} (+${getCountryCallingCode(c)})`;
   const fieldId = useId();
   const errorId = `${fieldId}-err`;
   const [mounted, setMounted] = useState(false);
@@ -49,10 +50,10 @@ export function PhoneInput({ label, value, onChange, error, hint }: Props) {
     const rest = all
       .filter((c) => !PRIORITY.includes(c))
       .sort((a, b) =>
-        (displayNames?.of(a) ?? a).localeCompare(displayNames?.of(b) ?? b, "es"),
+        (displayNames?.of(a) ?? a).localeCompare(displayNames?.of(b) ?? b, lang),
       );
     return [...PRIORITY.filter((c) => all.includes(c)), ...rest];
-  }, []);
+  }, [displayNames, lang]);
 
   function emit(nextCountry: CountryCode, nextNational: string) {
     const digits = nextNational.replace(/[^\d]/g, "");
@@ -64,13 +65,13 @@ export function PhoneInput({ label, value, onChange, error, hint }: Props) {
   return (
     <div>
       <label htmlFor={fieldId} className="field-label">
-        {label}
+        {t(label)}
       </label>
 
       {mounted ? (
         <div className="flex gap-2">
           <select
-            aria-label="Código de país"
+            aria-label={t("Código de país")}
             value={country}
             onChange={(e) => {
               const c = e.target.value as CountryCode;
@@ -114,11 +115,11 @@ export function PhoneInput({ label, value, onChange, error, hint }: Props) {
         />
       )}
 
-      {hint && !error && <p className="mt-1 text-xs text-piedra">{hint}</p>}
+      {hint && !error && <p className="mt-1 text-xs text-piedra">{t(hint)}</p>}
       {error && (
         <p id={errorId} className="field-error">
           <span aria-hidden>⚠</span>
-          <span>{error}</span>
+          <span>{t(error)}</span>
         </p>
       )}
     </div>

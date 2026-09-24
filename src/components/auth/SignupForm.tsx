@@ -14,10 +14,12 @@ import { Alert } from "@/components/ui/Alert";
 import { GoogleButton } from "./GoogleButton";
 import { GOOGLE_AUTH_ENABLED, ROUTES } from "@/lib/constants";
 import { todayKey } from "@/lib/date";
+import { useT } from "@/components/i18n/LangProvider";
 
 const initial: ActionResult = { ok: false };
 
 export function SignupForm({ next }: { next?: string }) {
+  const { t } = useT();
   const [state, formAction, pending] = useActionState(signUpAction, initial);
   const {
     register,
@@ -42,8 +44,7 @@ export function SignupForm({ next }: { next?: string }) {
   if (state.needsEmailConfirmation) {
     return (
       <Alert tone="success" title="Revisá tu correo">
-        Te enviamos un enlace para confirmar tu email. Al confirmarlo vas a poder
-        reservar tu clase.
+        Te enviamos un enlace para confirmar tu email. Al confirmarlo vas a poder reservar tu clase.
       </Alert>
     );
   }
@@ -51,15 +52,15 @@ export function SignupForm({ next }: { next?: string }) {
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h1 className="text-xl font-semibold">Sumate al clu</h1>
-        <p className="mt-1 text-sm text-piedra">Creá tu cuenta para reservar tu lugar.</p>
+        <h1 className="text-xl font-semibold">{t("Sumate al clu")}</h1>
+        <p className="mt-1 text-sm text-piedra">{t("Creá tu cuenta para reservar tu lugar.")}</p>
       </div>
 
       {GOOGLE_AUTH_ENABLED && (
         <>
           <GoogleButton />
           <div className="flex items-center gap-3 text-xs text-piedra-soft">
-            <span className="h-px flex-1 bg-lino" />o con tu email
+            <span className="h-px flex-1 bg-lino" />{t("o con tu email")}
             <span className="h-px flex-1 bg-lino" />
           </div>
         </>
@@ -113,14 +114,14 @@ export function SignupForm({ next }: { next?: string }) {
         {state.error && <Alert tone="error">{state.error}</Alert>}
 
         <Button type="submit" fullWidth size="lg" loading={pending}>
-          Crear cuenta
+          {t("Crear cuenta")}
         </Button>
       </form>
 
       <p className="text-center text-sm text-piedra">
-        ¿Ya tenés cuenta?{" "}
+        {t("¿Ya tenés cuenta?")}{" "}
         <Link href={ROUTES.login} className="font-semibold text-ladrillo-deep underline">
-          Iniciá sesión
+          {t("Iniciá sesión")}
         </Link>
       </p>
     </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
+import { useT } from "@/components/i18n/LangProvider";
 import {
   CalendarIcon,
   NewsIcon,
@@ -28,6 +29,7 @@ export function BottomNav({
   newsUnread?: boolean;
 }) {
   const pathname = usePathname();
+  const { t } = useT();
 
   const isActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
@@ -56,7 +58,7 @@ export function BottomNav({
       ];
 
   const fabHref = isAdmin ? "/admin/horarios/nueva" : ROUTES.calendario;
-  const fabLabel = isAdmin ? "Agregar una clase" : "Reservar una clase";
+  const fabLabel = t(isAdmin ? "Agregar una clase" : "Reservar una clase");
 
   const Tab = ({ href, label, icon: Icon, dot }: Item) => {
     const active = isActive(href);
@@ -78,8 +80,8 @@ export function BottomNav({
           )}
         </span>
         <span className="leading-none">
-          {label}
-          {dot && <span className="sr-only"> (hay novedades)</span>}
+          {t(label)}
+          {dot && <span className="sr-only"> ({t("hay novedades")})</span>}
         </span>
       </Link>
     );
@@ -87,7 +89,7 @@ export function BottomNav({
 
   return (
     <nav
-      aria-label="Navegación principal"
+      aria-label={t("Navegación principal")}
       className="fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.25rem)] max-w-sm -translate-x-1/2"
       style={{ marginBottom: "env(safe-area-inset-bottom)" }}
     >

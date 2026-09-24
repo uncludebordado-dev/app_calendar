@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { reserveKitAction } from "@/app/(app)/reserva-kit/actions";
 import { Alert } from "@/components/ui/Alert";
 import { KIT_ACCENT, type KitInfo } from "@/lib/kits";
+import { useT } from "@/components/i18n/LangProvider";
 
 const money = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" });
 
@@ -31,6 +32,7 @@ function KitArt({ accent, photoUrl, name }: { accent: string; photoUrl: string |
 }
 
 export function KitCard({ kit }: { kit: KitInfo }) {
+  const { t } = useT();
   const [qty, setQty] = useState(1);
   const [note, setNote] = useState("");
   const [pending, start] = useTransition();
@@ -42,7 +44,7 @@ export function KitCard({ kit }: { kit: KitInfo }) {
     start(async () => {
       const res = await reserveKitAction({ kit: kit.id, quantity: qty, note });
       if (res.ok) setDone(true);
-      else setErr(res.error ?? "No se pudo reservar.");
+      else setErr(res.error ? t(res.error) : t("No se pudo reservar."));
     });
   }
 
@@ -71,19 +73,18 @@ export function KitCard({ kit }: { kit: KitInfo }) {
 
       {done ? (
         <Alert tone="success" title="¡Reserva enviada!">
-          La profe recibió tu pedido y te va a escribir para coordinar la entrega y el pago
-          en persona.
+          La profe recibió tu pedido y te va a escribir para coordinar la entrega y el pago en persona.
         </Alert>
       ) : (
         <>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-piedra">Cantidad</span>
+            <span className="text-sm text-piedra">{t("Cantidad")}</span>
             <div className="flex items-center rounded-xl border border-lino">
               <button
                 type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="px-3 py-1.5 text-lg text-piedra-deep"
-                aria-label="Menos"
+                aria-label={t("Menos")}
               >
                 −
               </button>
@@ -92,7 +93,7 @@ export function KitCard({ kit }: { kit: KitInfo }) {
                 type="button"
                 onClick={() => setQty((q) => Math.min(20, q + 1))}
                 className="px-3 py-1.5 text-lg text-piedra-deep"
-                aria-label="Más"
+                aria-label={t("Más")}
               >
                 +
               </button>
@@ -102,7 +103,7 @@ export function KitCard({ kit }: { kit: KitInfo }) {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             maxLength={300}
-            placeholder="Nota para la profe (opcional)"
+            placeholder={t("Nota para la profe (opcional)")}
             className="field-input text-sm"
           />
           {err && <Alert tone="error">{err}</Alert>}
@@ -112,10 +113,10 @@ export function KitCard({ kit }: { kit: KitInfo }) {
             disabled={pending}
             className="w-full rounded-xl bg-ladrillo px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
           >
-            {pending ? "Enviando…" : "Reservar"}
+            {pending ? t("Enviando…") : t("Reservar")}
           </button>
           <p className="text-center text-xs text-piedra-soft">
-            Sin pago online: la profe te contacta y el pago se hace en persona.
+            {t("Sin pago online: la profe te contacta y el pago se hace en persona.")}
           </p>
         </>
       )}

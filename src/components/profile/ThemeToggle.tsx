@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useT } from "@/components/i18n/LangProvider";
 
 const options = [
   { value: "light", label: "Claro", icon: "☀︎" },
@@ -10,6 +11,7 @@ const options = [
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t } = useT();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -18,8 +20,8 @@ export function ThemeToggle() {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <p className="font-medium text-piedra-deep">Tema</p>
-        <p className="text-xs text-piedra">Elegí cómo se ve la app.</p>
+        <p className="font-medium text-piedra-deep">{t("Tema")}</p>
+        <p className="text-xs text-piedra">{t("Elegí cómo se ve la app.")}</p>
       </div>
       <div className="flex gap-1 rounded-xl border border-lino p-1">
         {options.map((o) => (
@@ -35,7 +37,7 @@ export function ThemeToggle() {
             }`}
           >
             <span aria-hidden className="mr-1">{o.icon}</span>
-            {o.label}
+            {t(o.label)}
           </button>
         ))}
       </div>

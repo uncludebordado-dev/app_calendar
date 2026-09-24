@@ -12,10 +12,12 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { GoogleButton } from "./GoogleButton";
 import { GOOGLE_AUTH_ENABLED, ROUTES } from "@/lib/constants";
+import { useT } from "@/components/i18n/LangProvider";
 
 const initial: ActionResult = { ok: false };
 
 export function LoginForm({ next, authError }: { next?: string; authError?: string }) {
+  const { t } = useT();
   const [state, formAction, pending] = useActionState(signInAction, initial);
   const {
     register,
@@ -34,15 +36,15 @@ export function LoginForm({ next, authError }: { next?: string; authError?: stri
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <h1 className="text-xl font-semibold">Hola de nuevo</h1>
-        <p className="mt-1 text-sm text-piedra">Entrá para reservar o ver tus clases.</p>
+        <h1 className="text-xl font-semibold">{t("Hola de nuevo")}</h1>
+        <p className="mt-1 text-sm text-piedra">{t("Entrá para reservar o ver tus clases.")}</p>
       </div>
 
       {GOOGLE_AUTH_ENABLED && (
         <>
           <GoogleButton />
           <div className="flex items-center gap-3 text-xs text-piedra-soft">
-            <span className="h-px flex-1 bg-lino" />o con tu email
+            <span className="h-px flex-1 bg-lino" />{t("o con tu email")}
             <span className="h-px flex-1 bg-lino" />
           </div>
         </>
@@ -68,22 +70,23 @@ export function LoginForm({ next, authError }: { next?: string; authError?: stri
 
         {(state.error || authError) && (
           <Alert tone="error">
-            {state.error ??
-              (authError && authError !== "auth"
-                ? `No pudimos iniciar sesión: ${authError}`
-                : "No pudimos iniciar sesión. Probá de nuevo.")}
+            {state.error
+              ? t(state.error)
+              : authError && authError !== "auth"
+                ? `${t("No pudimos iniciar sesión")}: ${authError}`
+                : t("No pudimos iniciar sesión. Probá de nuevo.")}
           </Alert>
         )}
 
         <Button type="submit" fullWidth size="lg" loading={pending}>
-          Iniciar sesión
+          {t("Iniciar sesión")}
         </Button>
       </form>
 
       <p className="text-center text-sm text-piedra">
-        ¿Todavía no tenés cuenta?{" "}
+        {t("¿Todavía no tenés cuenta?")}{" "}
         <Link href={ROUTES.registro} className="font-semibold text-ladrillo-deep underline">
-          Registrate
+          {t("Registrate")}
         </Link>
       </p>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { subscribeToPushAction } from "@/app/(app)/news/actions";
+import { useT } from "@/components/i18n/LangProvider";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 const DISMISS_KEY = "clu-push-dismissed";
@@ -16,6 +17,7 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
 type Status = "hidden" | "offer" | "asking" | "on" | "unsupported" | "error" | "denied";
 
 export function PushOptIn() {
+  const { t } = useT();
   const [status, setStatus] = useState<Status>("hidden");
 
   useEffect(() => {
@@ -92,13 +94,12 @@ export function PushOptIn() {
     return (
       <div className="flex items-center justify-between gap-3 rounded-xl border border-lino bg-surface p-3 text-xs">
         <span className="text-piedra">
-          Las notificaciones están bloqueadas en este navegador. Activalas desde la
-          configuración del sitio para enterarte de las novedades.
+          {t("Las notificaciones están bloqueadas en este navegador. Activalas desde la configuración del sitio para enterarte de las novedades.")}
         </span>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Cerrar"
+          aria-label={t("Cerrar")}
           className="shrink-0 rounded-full px-2 py-1.5 text-piedra hover:text-piedra-deep"
         >
           ✕
@@ -111,8 +112,8 @@ export function PushOptIn() {
     <div className="flex items-center justify-between gap-3 rounded-xl border border-lino bg-surface p-3 text-xs">
       <span className="text-piedra">
         {status === "error"
-          ? "No se pudo activar. Probá desde el celular, con la app instalada."
-          : "Activá las notificaciones para enterarte apenas se publica algo nuevo."}
+          ? t("No se pudo activar. Probá desde el celular, con la app instalada.")
+          : t("Activá las notificaciones para enterarte apenas se publica algo nuevo.")}
       </span>
       <div className="flex shrink-0 gap-2">
         <button
@@ -121,12 +122,12 @@ export function PushOptIn() {
           disabled={status === "asking"}
           className="rounded-full bg-ladrillo px-3 py-1.5 font-semibold text-white disabled:opacity-50"
         >
-          {status === "asking" ? "Activando…" : "Activar"}
+          {status === "asking" ? t("Activando…") : t("Activar")}
         </button>
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Cerrar"
+          aria-label={t("Cerrar")}
           className="rounded-full px-2 py-1.5 text-piedra hover:text-piedra-deep"
         >
           ✕

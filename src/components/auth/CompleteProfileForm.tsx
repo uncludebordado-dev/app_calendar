@@ -12,6 +12,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { todayKey } from "@/lib/date";
+import { useT } from "@/components/i18n/LangProvider";
 
 const initial: ActionResult = { ok: false };
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024; // 4 MB
@@ -36,6 +37,7 @@ export function CompleteProfileForm({
   isAdmin?: boolean;
   mode?: "complete" | "edit";
 }) {
+  const { t } = useT();
   const [state, formAction, pending] = useActionState(completeProfileAction, initial);
   const [avatar, setAvatar] = useState<string | null>(defaultAvatar);
   const [uploading, setUploading] = useState(false);
@@ -48,11 +50,11 @@ export function CompleteProfileForm({
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setUploadMsg({ tone: "error", text: "Elegí un archivo de imagen (JPG o PNG)." });
+      setUploadMsg({ tone: "error", text: t("Elegí un archivo de imagen (JPG o PNG).") });
       return;
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      setUploadMsg({ tone: "error", text: "La imagen supera los 4 MB. Probá con una más liviana." });
+      setUploadMsg({ tone: "error", text: t("La imagen supera los 4 MB. Probá con una más liviana.") });
       return;
     }
 
@@ -74,11 +76,11 @@ export function CompleteProfileForm({
 
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
       setAvatar(pub.publicUrl);
-      setUploadMsg({ tone: "ok", text: "Foto lista. Acordate de guardar los cambios." });
+      setUploadMsg({ tone: "ok", text: t("Foto lista. Acordate de guardar los cambios.") });
     } catch {
       setUploadMsg({
         tone: "error",
-        text: "No se pudo subir la foto. Volvé a intentar en un momento.",
+        text: t("No se pudo subir la foto. Volvé a intentar en un momento."),
       });
     } finally {
       setUploading(false);
@@ -108,9 +110,9 @@ export function CompleteProfileForm({
     <div className="space-y-5">
       {mode === "complete" && (
         <div className="text-center">
-          <h1 className="text-xl font-semibold">Un último paso</h1>
+          <h1 className="text-xl font-semibold">{t("Un último paso")}</h1>
           <p className="mt-1 text-sm text-piedra">
-            Necesitamos tu nombre y teléfono para poder reservarte un lugar.
+            {t("Necesitamos tu nombre y teléfono para poder reservarte un lugar.")}
           </p>
         </div>
       )}
@@ -130,7 +132,7 @@ export function CompleteProfileForm({
                 disabled={uploading}
                 className="rounded-lg border border-lino px-2.5 py-1 font-medium text-piedra hover:bg-lino-soft disabled:opacity-50"
               >
-                {uploading ? "Subiendo…" : "Subir foto"}
+                {uploading ? t("Subiendo…") : t("Subir foto")}
               </button>
               {googleAvatar && googleAvatar !== avatar && (
                 <button
@@ -138,7 +140,7 @@ export function CompleteProfileForm({
                   onClick={() => setAvatar(googleAvatar)}
                   className="rounded-lg border border-lino px-2.5 py-1 font-medium text-piedra hover:bg-lino-soft"
                 >
-                  Usar mi foto de Google
+                  {t("Usar mi foto de Google")}
                 </button>
               )}
               {isAdmin && avatar !== CLU_LOGO && (
@@ -147,7 +149,7 @@ export function CompleteProfileForm({
                   onClick={() => setAvatar(CLU_LOGO)}
                   className="rounded-lg border border-lino px-2.5 py-1 font-medium text-piedra hover:bg-lino-soft"
                 >
-                  Usar el logo del clu
+                  {t("Usar el logo del clu")}
                 </button>
               )}
               {avatar && (
@@ -156,7 +158,7 @@ export function CompleteProfileForm({
                   onClick={() => setAvatar(null)}
                   className="rounded-lg border border-lino px-2.5 py-1 font-medium text-piedra hover:bg-lino-soft"
                 >
-                  Quitar foto
+                  {t("Quitar foto")}
                 </button>
               )}
             </div>
@@ -207,7 +209,7 @@ export function CompleteProfileForm({
         {state.error && <Alert tone="error">{state.error}</Alert>}
 
         <Button type="submit" fullWidth size="lg" loading={pending}>
-          {mode === "edit" ? "Guardar cambios" : "Guardar y continuar"}
+          {mode === "edit" ? t("Guardar cambios") : t("Guardar y continuar")}
         </Button>
       </form>
     </div>

@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { buildMonthGrid, MONTH_NAMES_ES, WEEKDAY_LABELS_ES } from "@/lib/date";
+import { buildMonthGrid, monthNames, weekdayLabels } from "@/lib/date";
+import { useT } from "@/components/i18n/LangProvider";
 import { catalanHoliday } from "@/lib/holidays";
 import type { CalendarSlot } from "@/lib/calendar";
 import { DayPanel } from "./DayPanel";
@@ -29,6 +30,7 @@ export function CalendarView({
   birthdaysByDay = {},
 }: Props) {
   const router = useRouter();
+  const { t, lang } = useT();
   const grid = useMemo(() => buildMonthGrid(year, month), [year, month]);
 
   const [ty, tm] = todayKey.split("-").map(Number);
@@ -67,25 +69,25 @@ export function CalendarView({
             onClick={() => goMonth(-1)}
             disabled={atCurrentMonth}
             className="rounded-lg px-2 py-1 text-piedra hover:bg-lino-soft disabled:opacity-30"
-            aria-label="Mes anterior"
+            aria-label={t("Mes anterior")}
           >
             ←
           </button>
           <h2 className="text-sm font-semibold capitalize">
-            {MONTH_NAMES_ES[month]} {year}
+            {monthNames(lang)[month]} {year}
           </h2>
           <button
             type="button"
             onClick={() => goMonth(1)}
             className="rounded-lg px-2 py-1 text-piedra hover:bg-lino-soft"
-            aria-label="Mes siguiente"
+            aria-label={t("Mes siguiente")}
           >
             →
           </button>
         </div>
 
         <div className="grid grid-cols-7 gap-px bg-lino p-px text-center text-[11px] font-medium text-piedra">
-          {WEEKDAY_LABELS_ES.map((d) => (
+          {weekdayLabels(lang).map((d) => (
             <div key={d} className="bg-crema py-1.5 capitalize">
               {d}
             </div>
@@ -111,9 +113,9 @@ export function CalendarView({
                 aria-pressed={isSelected}
                 title={holiday ?? undefined}
                 aria-label={`${cell.day}${
-                  count > 0 ? ` — ${count} horario(s) con lugar` : ""
-                }${bdays.length ? ` — cumpleaños de ${bdays.join(", ")}` : ""}${
-                  holiday ? ` — festivo: ${holiday}` : ""
+                  count > 0 ? ` — ${t("{n} horario(s) con lugar", { n: count })}` : ""
+                }${bdays.length ? ` — ${t("cumpleaños de")} ${bdays.join(", ")}` : ""}${
+                  holiday ? ` — ${t("festivo")}: ${holiday}` : ""
                 }`}
                 className={[
                   "relative flex aspect-square flex-col items-center justify-center bg-crema text-sm transition-colors",
@@ -135,7 +137,7 @@ export function CalendarView({
                 {mine && (
                   <span
                     className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-piedra"
-                    title="Ya reservaste este día"
+                    title={t("Ya reservaste este día")}
                     aria-hidden
                   />
                 )}
@@ -147,14 +149,14 @@ export function CalendarView({
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 px-1 text-xs text-piedra">
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-ladrillo" /> hay lugar
+          <span className="h-1.5 w-1.5 rounded-full bg-ladrillo" /> {t("hay lugar")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-piedra" /> ya reservaste
+          <span className="h-1.5 w-1.5 rounded-full bg-piedra" /> {t("ya reservaste")}
         </span>
-        <span className="flex items-center gap-1.5">🎂 cumpleaños</span>
+        <span className="flex items-center gap-1.5">🎂 {t("cumpleaños")}</span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded bg-piedra/25" /> festivo (Catalunya)
+          <span className="h-2.5 w-2.5 rounded bg-piedra/25" /> {t("festivo (Catalunya)")}
         </span>
       </div>
 
@@ -168,8 +170,8 @@ export function CalendarView({
       ) : (
         <p className="rounded-xl border border-dashed border-lino px-4 py-8 text-center text-sm text-piedra">
           {isCurrentOrPastMonth
-            ? "Elegí un día con clase o cumpleaños."
-            : "Todavía no hay clases publicadas para este mes."}
+            ? t("Elegí un día con clase o cumpleaños.")
+            : t("Todavía no hay clases publicadas para este mes.")}
         </p>
       )}
     </div>

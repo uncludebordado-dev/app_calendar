@@ -1,4 +1,5 @@
 import { TIMEZONE } from "@/lib/constants";
+import { LOCALE, type Lang } from "@/lib/i18n/config";
 import type { AvailabilitySlot } from "@/types/database.types";
 
 type SlotTime = Pick<AvailabilitySlot, "class_date" | "start_time">;
@@ -38,8 +39,8 @@ export function todayKey(): string {
 }
 
 /** "sábado 6 de septiembre" */
-export function formatLongDate(dateKey: string): string {
-  return new Intl.DateTimeFormat("es-AR", {
+export function formatLongDate(dateKey: string, lang: Lang = "es"): string {
+  return new Intl.DateTimeFormat(LOCALE[lang], {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -103,3 +104,13 @@ export const MONTH_NAMES_ES = [
 ];
 
 export const WEEKDAY_LABELS_ES = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
+
+export const MONTH_NAMES_CA = [
+  "gener", "febrer", "març", "abril", "maig", "juny",
+  "juliol", "agost", "setembre", "octubre", "novembre", "desembre",
+];
+
+export const WEEKDAY_LABELS_CA = ["dl", "dt", "dc", "dj", "dv", "ds", "dg"];
+
+export const monthNames = (lang: Lang) => (lang === "ca" ? MONTH_NAMES_CA : MONTH_NAMES_ES);
+export const weekdayLabels = (lang: Lang) => (lang === "ca" ? WEEKDAY_LABELS_CA : WEEKDAY_LABELS_ES);

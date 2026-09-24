@@ -5,8 +5,10 @@ import { Toggle } from "@/components/ui/Toggle";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { pinIsSet, removePin, setPin } from "@/lib/pin";
+import { useT } from "@/components/i18n/LangProvider";
 
 export function PinSettings() {
+  const { t } = useT();
   const [enabled, setEnabled] = useState(false);
   const [editing, setEditing] = useState(false);
   const [a, setA] = useState("");
@@ -22,14 +24,14 @@ export function PinSettings() {
 
   async function save() {
     setMsg(null);
-    if (!/^\d{4,8}$/.test(a)) return setMsg("El PIN debe tener entre 4 y 8 números.");
-    if (a !== b) return setMsg("Los PIN no coinciden.");
+    if (!/^\d{4,8}$/.test(a)) return setMsg(t("El PIN debe tener entre 4 y 8 números."));
+    if (a !== b) return setMsg(t("Los PIN no coinciden."));
     await setPin(a);
     setEnabled(true);
     setEditing(false);
     setA("");
     setB("");
-    setMsg("PIN activado en este dispositivo.");
+    setMsg(t("PIN activado en este dispositivo."));
   }
 
   function toggle(v: boolean) {
@@ -39,7 +41,7 @@ export function PinSettings() {
       removePin();
       setEnabled(false);
       setEditing(false);
-      setMsg("Bloqueo desactivado.");
+      setMsg(t("Bloqueo desactivado."));
     }
   }
 
@@ -47,12 +49,12 @@ export function PinSettings() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium text-piedra-deep">Bloqueo con PIN</p>
+          <p className="font-medium text-piedra-deep">{t("Bloqueo con PIN")}</p>
           <p className="text-xs text-piedra">
-            Pide un PIN al abrir la app en este dispositivo.
+            {t("Pide un PIN al abrir la app en este dispositivo.")}
           </p>
         </div>
-        <Toggle checked={enabled} onChange={toggle} label="Bloqueo con PIN" />
+        <Toggle checked={enabled} onChange={toggle} label={t("Bloqueo con PIN")} />
       </div>
 
       {editing && (
@@ -60,7 +62,7 @@ export function PinSettings() {
           <input
             type="password"
             inputMode="numeric"
-            placeholder="Nuevo PIN (4 a 8 números)"
+            placeholder={t("Nuevo PIN (4 a 8 números)")}
             value={a}
             onChange={(e) => setA(e.target.value.replace(/\D/g, ""))}
             className="field-input"
@@ -69,7 +71,7 @@ export function PinSettings() {
           <input
             type="password"
             inputMode="numeric"
-            placeholder="Repetí el PIN"
+            placeholder={t("Repetí el PIN")}
             value={b}
             onChange={(e) => setB(e.target.value.replace(/\D/g, ""))}
             className="field-input"
@@ -77,10 +79,10 @@ export function PinSettings() {
           />
           <div className="flex gap-2">
             <Button type="button" size="md" onClick={save}>
-              Guardar PIN
+              {t("Guardar PIN")}
             </Button>
             <Button type="button" size="md" variant="ghost" onClick={() => { setEditing(false); setEnabled(pinIsSet()); }}>
-              Cancelar
+              {t("Cancelar")}
             </Button>
           </div>
         </div>
@@ -90,14 +92,14 @@ export function PinSettings() {
 
       <div className="flex items-center justify-between opacity-60">
         <div>
-          <p className="font-medium text-piedra-deep">Ingreso con huella</p>
+          <p className="font-medium text-piedra-deep">{t("Ingreso con huella")}</p>
           <p className="text-xs text-piedra">
             {biometricSupported
-              ? "Disponible próximamente (passkeys)."
-              : "Este dispositivo no lo soporta."}
+              ? t("Disponible próximamente (passkeys).")
+              : t("Este dispositivo no lo soporta.")}
           </p>
         </div>
-        <Toggle checked={false} onChange={() => {}} disabled label="Ingreso con huella" />
+        <Toggle checked={false} onChange={() => {}} disabled label={t("Ingreso con huella")} />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import {
 } from "@/app/(app)/news/actions";
 import { PushOptIn } from "./PushOptIn";
 import { linkify } from "@/lib/linkify";
+import { useT } from "@/components/i18n/LangProvider";
 import type { NewsEmoji, NewsPost } from "@/types/database.types";
 
 const EMOJIS: { key: NewsEmoji; char: string; label: string }[] = [
@@ -20,8 +21,8 @@ const EMOJIS: { key: NewsEmoji; char: string; label: string }[] = [
   { key: "triste", char: "😢", label: "Triste" },
 ];
 
-function whenLabel(iso: string): string {
-  return new Intl.DateTimeFormat("es-ES", {
+function whenLabel(iso: string, lang: string): string {
+  return new Intl.DateTimeFormat(lang === "ca" ? "ca-ES" : "es-ES", {
     day: "numeric",
     month: "short",
     hour: "2-digit",
@@ -39,6 +40,7 @@ export function NewsFeed({
   isAdmin: boolean;
   userId: string;
 }) {
+  const { t, lang } = useT();
   const supabase = createClient();
   const [posts, setPosts] = useState<NewsPost[]>(initialPosts);
 
@@ -93,7 +95,7 @@ export function NewsFeed({
 
       {posts.length === 0 ? (
         <p className="rounded-xl border border-dashed border-lino px-4 py-12 text-center text-sm text-piedra">
-          Todavía no hay noticias.
+          {t("Todavía no hay noticias.")}
           {isAdmin ? " Publicá la primera 👆" : ""}
         </p>
       ) : (
@@ -104,7 +106,7 @@ export function NewsFeed({
                 <Avatar src={p.author_avatar} name={p.author_name} size={34} />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-piedra-deep">{p.author_name}</p>
-                  <p className="text-[11px] text-piedra-soft">{whenLabel(p.created_at)}</p>
+                  <p className="text-[11px] text-piedra-soft">{whenLabel(p.created_at, lang)}</p>
                 </div>
                 {isAdmin && (
                   <form action={deleteNewsAction}>
@@ -134,7 +136,7 @@ export function NewsFeed({
                       type="button"
                       onClick={() => react(p, e.key)}
                       aria-pressed={mine}
-                      aria-label={e.label}
+                      aria-label={t(e.label)}
                       className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition-colors ${
                         mine
                           ? "border-ladrillo bg-ladrillo/10 text-ladrillo-deep"

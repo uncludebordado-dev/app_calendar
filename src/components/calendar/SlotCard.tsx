@@ -9,9 +9,11 @@ import { formatTime } from "@/lib/date";
 import { ROUTES } from "@/lib/constants";
 import type { CalendarSlot } from "@/lib/calendar";
 import { bookSlotAction } from "@/app/(app)/calendario/actions";
+import { useT } from "@/components/i18n/LangProvider";
 
 export function SlotCard({ slot, canBook }: { slot: CalendarSlot; canBook: boolean }) {
   const router = useRouter();
+  const { t } = useT();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [justBooked, setJustBooked] = useState(false);
@@ -27,7 +29,7 @@ export function SlotCard({ slot, canBook }: { slot: CalendarSlot; canBook: boole
         setJustBooked(true);
         router.refresh();
       } else {
-        setError(res.error ?? "No se pudo reservar.");
+        setError(res.error ? t(res.error) : t("No se pudo reservar."));
       }
     });
   }
@@ -42,14 +44,14 @@ export function SlotCard({ slot, canBook }: { slot: CalendarSlot; canBook: boole
           {slot.notes && <p className="mt-0.5 text-sm text-piedra">{slot.notes}</p>}
           <p className="mt-1 text-xs text-piedra">
             {booked
-              ? "Tenés tu lugar reservado"
+              ? t("Tenés tu lugar reservado")
               : slot.isPast
-                ? "Ya pasó"
+                ? t("Ya pasó")
                 : full
-                  ? "Sin lugares"
+                  ? t("Sin lugares")
                   : slot.spotsLeft === 1
-                    ? "Queda 1 lugar"
-                    : `Quedan ${slot.spotsLeft} lugares`}
+                    ? t("Queda 1 lugar")
+                    : t("Quedan {n} lugares", { n: slot.spotsLeft })}
           </p>
         </div>
 
@@ -59,11 +61,11 @@ export function SlotCard({ slot, canBook }: { slot: CalendarSlot; canBook: boole
               href={ROUTES.misReservas}
               className="inline-flex items-center rounded-lg bg-miel/40 px-3 py-1.5 text-xs font-semibold text-piedra-deep"
             >
-              Ver mi reserva
+              {t("Ver mi reserva")}
             </Link>
           ) : slot.isPast || full ? (
             <span className="inline-flex items-center rounded-lg bg-lino-soft px-3 py-1.5 text-xs font-medium text-piedra">
-              {full ? "Completo" : "Cerrado"}
+              {full ? t("Completo") : t("Cerrado")}
             </span>
           ) : (
             <Button
@@ -72,9 +74,9 @@ export function SlotCard({ slot, canBook }: { slot: CalendarSlot; canBook: boole
               onClick={book}
               loading={pending}
               disabled={!canBook}
-              title={!canBook ? "Tu cuenta está bloqueada para reservar" : undefined}
+              title={!canBook ? t("Tu cuenta está bloqueada para reservar") : undefined}
             >
-              Reservar
+              {t("Reservar")}
             </Button>
           )}
         </div>

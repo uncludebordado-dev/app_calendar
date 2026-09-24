@@ -1,7 +1,10 @@
+"use client";
+
 import { formatLongDate, formatTime, hoursUntilSlot } from "@/lib/date";
 import { FREE_CANCEL_HOURS } from "@/lib/constants";
 import type { AvailabilitySlot, Booking } from "@/types/database.types";
 import { CancelButton } from "./CancelButton";
+import { useT } from "@/components/i18n/LangProvider";
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -16,6 +19,7 @@ export function BookingRow({
   slot: AvailabilitySlot | null;
   kind: "upcoming" | "past";
 }) {
+  const { t, lang } = useT();
   const cancelled = booking.status === "cancelled";
   const hoursLeft = slot ? hoursUntilSlot(slot) : -1;
   const withinFreeWindow = hoursLeft >= FREE_CANCEL_HOURS;
@@ -26,7 +30,7 @@ export function BookingRow({
         <div className="min-w-0">
           {/* Día y fecha */}
           <p className="font-semibold text-piedra-deep">
-            {slot ? capitalize(formatLongDate(slot.class_date)) : "Clase eliminada"}
+            {slot ? capitalize(formatLongDate(slot.class_date, lang)) : t("Clase eliminada")}
           </p>
 
           {/* Horario de inicio y fin · nombre de la clase */}
@@ -41,21 +45,21 @@ export function BookingRow({
           <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
             {cancelled ? (
               <span className="rounded-full bg-lino-soft px-2.5 py-0.5 font-medium text-piedra">
-                Cancelada
+                {t("Cancelada")}
               </span>
             ) : (
               <span className="rounded-full bg-miel/30 px-2.5 py-0.5 font-medium text-piedra-deep">
-                Confirmada
+                {t("Confirmada")}
               </span>
             )}
             {booking.penalty_fee && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">
-                Baja &lt;24 h · se cobró la clase
+                {t("Baja <24 h · se cobró la clase")}
               </span>
             )}
             {booking.no_show && (
               <span className="rounded-full bg-ladrillo/10 px-2 py-0.5 text-ladrillo-deep">
-                Inasistencia · sanción
+                {t("Inasistencia · sanción")}
               </span>
             )}
           </div>

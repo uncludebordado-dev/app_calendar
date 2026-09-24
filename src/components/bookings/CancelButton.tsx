@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { cancelBookingAction } from "@/app/(app)/mis-reservas/actions";
+import { useT } from "@/components/i18n/LangProvider";
 
 export function CancelButton({
   bookingId,
@@ -14,6 +15,7 @@ export function CancelButton({
   withinFreeWindow: boolean;
 }) {
   const router = useRouter();
+  const { t } = useT();
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export function CancelButton({
         setConfirming(false);
         router.refresh();
       } else {
-        setError(res.error ?? "No se pudo cancelar.");
+        setError(res.error ? t(res.error) : t("No se pudo cancelar."));
       }
     });
   }
@@ -34,7 +36,7 @@ export function CancelButton({
   if (!confirming) {
     return (
       <Button variant="danger" size="md" type="button" onClick={() => setConfirming(true)}>
-        Cancelar
+        {t("Cancelar")}
       </Button>
     );
   }
@@ -43,15 +45,15 @@ export function CancelButton({
     <div className="w-56 space-y-2 text-right">
       <p className="text-xs text-piedra">
         {withinFreeWindow
-          ? "¿Confirmás la baja? Se libera tu lugar."
-          : "Falta menos de 24 hs. Esta baja se te cobrará igual que una clase. ¿Continuar?"}
+          ? t("¿Confirmás la baja? Se libera tu lugar.")
+          : t("Falta menos de 24 hs. Esta baja se te cobrará igual que una clase. ¿Continuar?")}
       </p>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" size="md" type="button" onClick={() => setConfirming(false)}>
-          No
+          {t("No")}
         </Button>
         <Button variant="danger" size="md" type="button" loading={pending} onClick={doCancel}>
-          Sí, dar de baja
+          {t("Sí, dar de baja")}
         </Button>
       </div>
       {error && <Alert tone="error">{error}</Alert>}

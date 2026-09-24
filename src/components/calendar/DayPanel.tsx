@@ -1,7 +1,10 @@
+"use client";
+
 import { formatLongDate } from "@/lib/date";
 import { catalanHoliday } from "@/lib/holidays";
 import type { CalendarSlot } from "@/lib/calendar";
 import { SlotCard } from "./SlotCard";
+import { useT } from "@/components/i18n/LangProvider";
 
 export function DayPanel({
   dateKey,
@@ -14,31 +17,32 @@ export function DayPanel({
   canBook: boolean;
   birthdayNames?: string[];
 }) {
+  const { t, lang } = useT();
   const sorted = [...slots].sort((a, b) => a.startTime.localeCompare(b.startTime));
   const holiday = catalanHoliday(dateKey);
 
   return (
     <section aria-live="polite" className="space-y-3">
       <h3 className="text-sm font-semibold capitalize text-piedra-deep">
-        {formatLongDate(dateKey)}
+        {formatLongDate(dateKey, lang)}
       </h3>
 
       {birthdayNames.length > 0 && (
         <p className="rounded-xl bg-miel/25 px-4 py-2.5 text-sm text-piedra-deep">
-          🎂 {birthdayNames.length === 1 ? "Cumpleaños de" : "Cumpleaños de"}{" "}
+          🎂 {t("Cumpleaños de")}{" "}
           <b>{birthdayNames.join(", ")}</b>
         </p>
       )}
 
       {holiday && (
         <p className="rounded-xl bg-piedra/15 px-4 py-2.5 text-sm text-piedra-deep">
-          Festivo en Catalunya: <b>{holiday}</b>
+          {t("Festivo en Catalunya")}: <b>{holiday}</b>
         </p>
       )}
 
       {sorted.length === 0 ? (
         <p className="rounded-xl border border-dashed border-lino px-4 py-6 text-center text-sm text-piedra">
-          {birthdayNames.length > 0 ? "No hay clase este día." : "No hay horarios para este día."}
+          {birthdayNames.length > 0 ? t("No hay clase este día.") : t("No hay horarios para este día.")}
         </p>
       ) : (
         <ul className="space-y-3">

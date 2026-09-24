@@ -1,3 +1,7 @@
+"use client";
+
+import { useT } from "@/components/i18n/LangProvider";
+
 type Tone = "info" | "success" | "warning" | "error";
 
 const tones: Record<Tone, string> = {
@@ -18,13 +22,18 @@ export function Alert({
   children?: React.ReactNode;
   className?: string;
 }) {
+  const { t } = useT();
   return (
     <div
       role={tone === "error" ? "alert" : "status"}
       className={`rounded-xl border px-4 py-3 text-sm ${tones[tone]} ${className}`}
     >
-      {title && <p className="font-semibold">{title}</p>}
-      {children && <div className={title ? "mt-1" : ""}>{children}</div>}
+      {title && <p className="font-semibold">{t(title)}</p>}
+      {children && (
+        <div className={title ? "mt-1" : ""}>
+          {typeof children === "string" ? t(children) : children}
+        </div>
+      )}
     </div>
   );
 }

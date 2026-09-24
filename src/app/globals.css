@@ -92,3 +92,22 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Portada: ocupa exactamente la pantalla, sin scroll (ni vertical ni horizontal). */
+html:has([data-landing]),
+body:has([data-landing]) {
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+body:has([data-landing]) {
+  display: flex;
+  flex-direction: column;
+}
+
+/* En pantallas bajitas, con las preguntas abiertas se ocultan los otros botones para que todo entre sin scroll. */
+@media (max-height: 640px) {
+  main[data-landing]:has(#faq-list) .cta-secondary {
+    display: none;
+  }
+}

@@ -2,6 +2,7 @@
 
 import { forwardRef, useId, useState } from "react";
 import { EyeIcon, EyeOffIcon } from "@/components/layout/icons";
+import { useT } from "@/components/i18n/LangProvider";
 
 interface PasswordFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: string;
@@ -12,6 +13,7 @@ interface PasswordFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 /** Como Field, pero con un botón de "ojito" para mostrar/ocultar la contraseña. */
 export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
   function PasswordField({ label, error, hint, id, className = "", ...props }, ref) {
+    const { t } = useT();
     const autoId = useId();
     const fieldId = id ?? autoId;
     const errorId = `${fieldId}-error`;
@@ -21,7 +23,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
     return (
       <div className={className}>
         <label htmlFor={fieldId} className="field-label">
-          {label}
+          {t(label)}
         </label>
         <div className="relative">
           <input
@@ -39,7 +41,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
           <button
             type="button"
             onClick={() => setVisible((v) => !v)}
-            aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+            aria-label={visible ? t("Ocultar contraseña") : t("Mostrar contraseña")}
             aria-pressed={visible}
             className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-piedra hover:text-piedra-deep"
           >
@@ -48,13 +50,13 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
         </div>
         {hint && !error && (
           <p id={hintId} className="mt-1 text-xs text-piedra">
-            {hint}
+            {t(hint)}
           </p>
         )}
         {error && (
           <p id={errorId} className="field-error">
             <span aria-hidden>⚠</span>
-            <span>{error}</span>
+            <span>{t(error)}</span>
           </p>
         )}
       </div>

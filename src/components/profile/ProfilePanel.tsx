@@ -6,6 +6,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Alert } from "@/components/ui/Alert";
 import { signOutAction } from "@/app/(auth)/actions";
 import type { Profile } from "@/types/database.types";
+import { LangSwitch } from "@/components/i18n/LangSwitch";
+import { getT } from "@/lib/i18n/server";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -16,7 +18,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export function ProfilePanel({
+export async function ProfilePanel({
   profile,
   email,
   googleAvatar,
@@ -31,19 +33,21 @@ export function ProfilePanel({
   nextPath: string;
   extra?: React.ReactNode;
 }) {
+  const isAdmin = profile.role === "admin";
+  const { t } = await getT(isAdmin ? "es" : undefined);
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <Avatar src={profile.avatar_url} name={profile.full_name} size={64} />
         <div className="min-w-0">
-          <h1 className="truncate text-lg font-semibold">{profile.full_name || "Mi perfil"}</h1>
+          <h1 className="truncate text-lg font-semibold">{profile.full_name || t("Mi perfil")}</h1>
           <p className="truncate text-sm text-piedra">{email}</p>
         </div>
       </div>
 
       {savedOk && <Alert tone="success">Datos actualizados.</Alert>}
 
-      <Section title="Información de perfil">
+      <Section title={t("Información de perfil")}>
         <CompleteProfileForm
           mode="edit"
           next={`${nextPath}?ok=1`}
@@ -56,17 +60,23 @@ export function ProfilePanel({
         />
       </Section>
 
-      <Section title="Notificaciones">
+      <Section title={t("Notificaciones")}>
         <NotificationsToggle initial={profile.notifications_enabled} />
       </Section>
 
-      <Section title="Privacidad y seguridad">
+      <Section title={t("Privacidad y seguridad")}>
         <PinSettings />
       </Section>
 
-      <Section title="Apariencia">
+      <Section title={t("Apariencia")}>
         <ThemeToggle />
       </Section>
+
+      {!isAdmin && (
+        <Section title={t("Idioma")}>
+          <LangSwitch />
+        </Section>
+      )}
 
       {extra}
 
@@ -75,7 +85,7 @@ export function ProfilePanel({
           type="submit"
           className="w-full rounded-xl border border-ladrillo px-4 py-3 text-sm font-semibold text-ladrillo-deep hover:bg-ladrillo/10"
         >
-          Cerrar sesión
+          {t("Cerrar sesión")}
         </button>
       </form>
     </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import { forwardRef, useId } from "react";
+import { useT } from "@/components/i18n/LangProvider";
 
 interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -11,6 +14,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
   { label, error, hint, id, className = "", ...props },
   ref,
 ) {
+  const { t } = useT();
   const autoId = useId();
   const fieldId = id ?? autoId;
   const errorId = `${fieldId}-error`;
@@ -19,7 +23,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
   return (
     <div className={className}>
       <label htmlFor={fieldId} className="field-label">
-        {label}
+        {t(label)}
       </label>
       <input
         ref={ref}
@@ -31,13 +35,13 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
       />
       {hint && !error && (
         <p id={hintId} className="mt-1 text-xs text-piedra">
-          {hint}
+          {t(hint)}
         </p>
       )}
       {error && (
         <p id={errorId} className="field-error">
           <span aria-hidden>⚠</span>
-          <span>{error}</span>
+          <span>{t(error)}</span>
         </p>
       )}
     </div>

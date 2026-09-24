@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireCompleteProfile } from "@/lib/auth";
-import { todayKey, formatLongDate, formatTime, isSlotInPast, MONTH_NAMES_ES } from "@/lib/date";
+import { todayKey, formatLongDate, formatTime, isSlotInPast, monthNames } from "@/lib/date";
 import {
   monthRange,
   parseMonthParam,
@@ -13,6 +13,7 @@ import Link from "next/link";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { Alert } from "@/components/ui/Alert";
 import { STRIKE_BLOCK_THRESHOLD } from "@/lib/constants";
+import { getT } from "@/lib/i18n/server";
 import { GiftIcon } from "@/components/layout/icons";
 import type { AvailabilitySlot, Booking } from "@/types/database.types";
 
@@ -30,6 +31,7 @@ export default async function CalendarioPage({
   const profile = await requireCompleteProfile();
   if (profile.role === "admin") redirect("/admin/calendario");
   const { mes, bienvenida } = await searchParams;
+  const { t, lang } = await getT();
 
   const today = todayKey();
   const { year, month } = parseMonthParam(mes, today);
@@ -86,15 +88,15 @@ export default async function CalendarioPage({
   return (
     <div className="space-y-5">
       {bienvenida && (
-        <Alert tone="success" title={`¡Bienvenida al clu, ${profile.full_name.split(" ")[0]}! 🎉`}>
-          Tu cuenta quedó registrada. Ya podés reservar tu lugar en la próxima clase.
+        <Alert tone="success" title={t("¡Bienvenida al clu, {name}! 🎉", { name: profile.full_name.split(" ")[0] })}>
+          {t("Tu cuenta quedó registrada. Ya podés reservar tu lugar en la próxima clase.")}
         </Alert>
       )}
 
       <div>
-        <h1 className="text-xl font-semibold">Reservá tu clase</h1>
+        <h1 className="text-xl font-semibold">{t("Reservá tu clase")}</h1>
         <p className="mt-1 text-sm text-piedra">
-          Tocá un día con lugar disponible y elegí el horario.
+          {t("Tocá un día con lugar disponible y elegí el horario.")}
         </p>
       </div>
 
@@ -105,7 +107,7 @@ export default async function CalendarioPage({
         >
           <span className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-full bg-miel/40 text-piedra-deep">
             <span className="text-[10px] font-semibold uppercase leading-none">
-              {MONTH_NAMES_ES[Number(nextClass.slot.class_date.slice(5, 7)) - 1]?.slice(0, 3)}
+              {monthNames(lang)[Number(nextClass.slot.class_date.slice(5, 7)) - 1]?.slice(0, 3)}
             </span>
             <span className="text-base font-bold leading-none">
               {nextClass.slot.class_date.slice(-2)}
@@ -113,10 +115,10 @@ export default async function CalendarioPage({
           </span>
           <span className="min-w-0">
             <span className="block text-xs font-semibold uppercase tracking-wide text-piedra">
-              Tu próxima clase
+              {t("Tu próxima clase")}
             </span>
             <span className="block font-semibold text-piedra-deep">
-              {capitalize(formatLongDate(nextClass.slot.class_date))}
+              {capitalize(formatLongDate(nextClass.slot.class_date, lang))}
             </span>
             <span className="block text-sm text-piedra">
               {formatTime(nextClass.slot.start_time)} – {formatTime(nextClass.slot.end_time)}
@@ -127,16 +129,23 @@ export default async function CalendarioPage({
       )}
 
       {profile.blocked && (
-        <Alert tone="error" title="Cuenta bloqueada para reservar">
-          Acumulaste {STRIKE_BLOCK_THRESHOLD} sanciones por inasistencias.
-          Escribinos por Instagram para reactivarla.
+        <Alert tone="error" title={t("Cuenta bloqueada para reservar")}>
+          {t("Acumulaste {n} sanciones por inasistencias. Escribinos por Instagram para reactivarla.", {
+            n: STRIKE_BLOCK_THRESHOLD,
+          })}
         </Alert>
       )}
 
       {!profile.blocked && profile.strikes > 0 && (
         <Alert tone="warning">
-          Tenés {profile.strikes} {profile.strikes === 1 ? "sanción" : "sanciones"} por
-          inasistencia. A las {STRIKE_BLOCK_THRESHOLD} se bloquea la reserva.
+          {profile.strikes === 1
+            ? t("Tenés 1 sanción por inasistencia. A las {max} se bloquea la reserva.", {
+                max: STRIKE_BLOCK_THRESHOLD,
+              })
+            : t("Tenés {n} sanciones por inasistencia. A las {max} se bloquea la reserva.", {
+                n: profile.strikes,
+                max: STRIKE_BLOCK_THRESHOLD,
+              })}
         </Alert>
       )}
 
@@ -157,9 +166,9 @@ export default async function CalendarioPage({
           <GiftIcon className="h-6 w-6" />
         </span>
         <span>
-          <span className="block font-semibold text-piedra-deep">Reservá tu kit</span>
+          <span className="block font-semibold text-piedra-deep">{t("Reservá tu kit")}</span>
           <span className="block text-sm text-piedra">
-            Básico, Medium o Pro — te lo prepara la profe.
+            {t("Básico, Medium o Pro — te lo prepara la profe.")}
           </span>
         </span>
         <span aria-hidden className="ml-auto text-piedra">→</span>
