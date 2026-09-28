@@ -35,3 +35,7 @@ yarn-error.log*
 # supabase
 /supabase/.branches
 /supabase/.temp
+
+# herramientas locales (Claude Code) y archivos de trabajo/borrador
+.claude/
+scratchpad/

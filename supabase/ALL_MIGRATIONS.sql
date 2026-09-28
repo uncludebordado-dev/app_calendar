@@ -1,11 +1,11 @@
 -- =============================================================================
--- un clu de bordado — TODO el esquema en un solo archivo.
--- Pegá este contenido completo en el SQL Editor de Supabase y ejecutalo UNA vez.
--- Orden: schema -> functions -> rls -> admin
+-- un clu de bordado — TODAS las migraciones, en orden.
+-- Re-ejecutable: usa 'create or replace' / 'if not exists' en todos lados, así
+-- que correr esto entero de nuevo sobre una base ya migrada no rompe nada.
+-- Generado a partir de supabase/migrations/ el 2026-09-28.
 -- =============================================================================
 
-
--- >>> supabase/migrations/20260902120000_schema.sql
+-- ==== 20260902120000_schema.sql ====
 
 -- =============================================================================
 -- un clu de bordado — esquema base
@@ -17,7 +17,7 @@ create extension if not exists "pg_net";         -- net.http_post() para webhook
 
 -- Zona horaria del emprendimiento. Todas las fechas/horas de clase se
 -- interpretan como hora local de Buenos Aires.
--- (se usa en línea como literal en las funciones: 'Europe/Madrid')
+-- (se usa en línea como literal en las funciones: 'America/Argentina/Buenos_Aires')
 
 -- -----------------------------------------------------------------------------
 -- updated_at helper
@@ -146,8 +146,7 @@ create table if not exists public.rate_limits (
 create index if not exists rate_limits_lookup_idx
   on public.rate_limits (bucket, subject, created_at);
 
-
--- >>> supabase/migrations/20260902120100_functions.sql
+-- ==== 20260902120100_functions.sql ====
 
 -- =============================================================================
 -- Funciones y triggers de dominio
@@ -319,7 +318,7 @@ begin
     raise exception 'slot_not_found' using errcode = 'P0001';
   end if;
   if (v_slot.class_date + v_slot.start_time)
-       <= (now() at time zone 'Europe/Madrid') then
+       <= (now() at time zone 'America/Argentina/Buenos_Aires') then
     raise exception 'slot_past' using errcode = 'P0001';
   end if;
 
@@ -379,7 +378,7 @@ begin
   select * into v_slot from public.availability_slots where id = v_booking.slot_id;
 
   v_hours := extract(epoch from (
-    (v_slot.class_date + v_slot.start_time) - (now() at time zone 'Europe/Madrid')
+    (v_slot.class_date + v_slot.start_time) - (now() at time zone 'America/Argentina/Buenos_Aires')
   )) / 3600.0;
   v_late := v_hours < 48;
 
@@ -519,8 +518,7 @@ create trigger bookings_email_cancel
   after update of status on public.bookings
   for each row execute function public.enqueue_booking_email();
 
-
--- >>> supabase/migrations/20260902120200_rls.sql
+-- ==== 20260902120200_rls.sql ====
 
 -- =============================================================================
 -- Row Level Security — habilitado en TODAS las tablas.
@@ -610,8 +608,7 @@ grant execute on function public.is_admin()             to authenticated;
 
 -- check_rate_limit se invoca sólo con service role (ver src/lib/rate-limit.ts)
 
-
--- >>> supabase/migrations/20260902120300_admin.sql
+-- ==== 20260902120300_admin.sql ====
 
 -- =============================================================================
 -- Lecturas de administración. SECURITY DEFINER + chequeo is_admin() para poder
@@ -708,8 +705,7 @@ $$;
 revoke all on function public.admin_list_students() from anon;
 grant execute on function public.admin_list_students() to authenticated;
 
-
--- >>> supabase/migrations/20260903120000_dashboard.sql
+-- ==== 20260903120000_dashboard.sql ====
 
 -- =============================================================================
 -- Panel de administración: fecha de nacimiento, pagos y métricas mensuales.
@@ -911,6 +907,7 @@ grant execute on function public.admin_month_summary(date, date) to authenticate
 -- -----------------------------------------------------------------------------
 -- admin_month_totals()  — números globales del mes
 -- -----------------------------------------------------------------------------
+drop function if exists public.admin_month_totals(date, date);
 create or replace function public.admin_month_totals(p_from date, p_to date)
 returns table (
   classes_count      bigint,
@@ -1039,6 +1036,702 @@ $$;
 
 grant execute on function public.admin_student_payments(uuid) to authenticated;
 
+-- ==== 20260903130000_timezone_madrid.sql ====
+
+-- =============================================================================
+-- Cambio de zona horaria del taller a Europe/Madrid.
+-- Re-crea book_slot() y cancel_booking() (dashboard.sql ya viene con Madrid).
+-- =============================================================================
+
+create or replace function public.book_slot(p_slot_id uuid)
+returns public.bookings
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid     uuid := auth.uid();
+  v_profile public.profiles;
+  v_slot    public.availability_slots;
+  v_rows    integer;
+  v_booking public.bookings;
+begin
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = 'P0001';
+  end if;
+
+  select * into v_profile from public.profiles where id = v_uid;
+  if not found or v_profile.full_name = '' or v_profile.phone_e164 = '' then
+    raise exception 'profile_incomplete' using errcode = 'P0001';
+  end if;
+  if v_profile.blocked then
+    raise exception 'user_blocked' using errcode = 'P0001';
+  end if;
+
+  -- ¿ya tiene reserva activa en esta franja?
+  if exists (
+    select 1 from public.bookings
+    where slot_id = p_slot_id and user_id = v_uid and status = 'confirmed'
+  ) then
+    raise exception 'already_booked' using errcode = 'P0001';
+  end if;
+
+  select * into v_slot from public.availability_slots where id = p_slot_id;
+  if not found or not v_slot.is_published then
+    raise exception 'slot_not_found' using errcode = 'P0001';
+  end if;
+  if (v_slot.class_date + v_slot.start_time)
+       <= (now() at time zone 'Europe/Madrid') then
+    raise exception 'slot_past' using errcode = 'P0001';
+  end if;
+
+  -- UPDATE condicional: sólo incrementa si queda cupo. Gana la carrera.
+  update public.availability_slots
+     set booked_count = booked_count + 1
+   where id = p_slot_id
+     and is_published
+     and booked_count < capacity;
+  get diagnostics v_rows = row_count;
+
+  if v_rows = 0 then
+    raise exception 'slot_full' using errcode = 'P0001';
+  end if;
+
+  insert into public.bookings (slot_id, user_id)
+  values (p_slot_id, v_uid)
+  returning * into v_booking;
+
+  return v_booking;
+end;
+$$;
+
+create or replace function public.cancel_booking(p_booking_id uuid)
+returns public.bookings
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid       uuid := auth.uid();
+  v_booking   public.bookings;
+  v_slot      public.availability_slots;
+  v_hours     numeric;
+  v_late      boolean;
+  v_strikes   smallint;
+begin
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = 'P0001';
+  end if;
+
+  select * into v_booking from public.bookings where id = p_booking_id;
+  if not found then
+    raise exception 'booking_not_found' using errcode = 'P0001';
+  end if;
+  if v_booking.user_id <> v_uid and not public.is_admin() then
+    raise exception 'not_owner' using errcode = 'P0001';
+  end if;
+  if v_booking.status = 'cancelled' then
+    raise exception 'already_cancelled' using errcode = 'P0001';
+  end if;
+
+  select * into v_slot from public.availability_slots where id = v_booking.slot_id;
+
+  v_hours := extract(epoch from (
+    (v_slot.class_date + v_slot.start_time) - (now() at time zone 'Europe/Madrid')
+  )) / 3600.0;
+  v_late := v_hours < 48;
+
+  update public.bookings
+     set status            = 'cancelled',
+         cancelled_at       = now(),
+         cancelled_by       = v_uid,
+         late_cancellation  = v_late
+   where id = p_booking_id
+  returning * into v_booking;
+
+  update public.availability_slots
+     set booked_count = greatest(booked_count - 1, 0)
+   where id = v_booking.slot_id;
+
+  -- Strike sólo si la cancela la propia alumna con menos de 48h.
+  if v_late and v_booking.user_id = v_uid then
+    update public.profiles
+       set strikes = strikes + 1,
+           blocked = (strikes + 1) >= 3
+     where id = v_booking.user_id
+    returning strikes into v_strikes;
+  end if;
+
+  return v_booking;
+end;
+$$;
+
+
+-- ==== 20260903140000_ux_features.sql ====
+
+-- =============================================================================
+-- Rediseño UX: avatar, preferencia de notificaciones, aviso de alta, chat grupal.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- profiles: avatar + preferencia de notificaciones
+-- -----------------------------------------------------------------------------
+alter table public.profiles add column if not exists avatar_url text;
+alter table public.profiles add column if not exists notifications_enabled boolean not null default true;
+
+-- Alta de usuario: captura también el avatar de Google (picture / avatar_url).
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_meta   jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  v_name   text;
+  v_phone  text;
+  v_bday   text;
+  v_avatar text;
+  v_role   text := 'alumna';
+begin
+  v_name   := trim(coalesce(v_meta ->> 'full_name', v_meta ->> 'name', ''));
+  v_phone  := trim(coalesce(v_meta ->> 'phone_e164', ''));
+  v_bday   := trim(coalesce(v_meta ->> 'birth_date', ''));
+  v_avatar := nullif(trim(coalesce(v_meta ->> 'avatar_url', v_meta ->> 'picture', '')), '');
+
+  if lower(new.email) = 'uncludebordado@gmail.com' then
+    v_role := 'admin';
+  end if;
+
+  insert into public.profiles (id, full_name, phone_e164, role, birth_date, avatar_url)
+  values (
+    new.id,
+    v_name,
+    case when v_phone ~ '^\+[1-9][0-9]{6,14}$' then v_phone else '' end,
+    v_role,
+    case when v_bday ~ '^\d{4}-\d{2}-\d{2}$' then v_bday::date else null end,
+    v_avatar
+  )
+  on conflict (id) do nothing;
+
+  return new;
+end;
+$$;
+
+-- -----------------------------------------------------------------------------
+-- email_events: nuevo tipo 'user_registered'
+-- -----------------------------------------------------------------------------
+alter table public.email_events drop constraint if exists email_events_type_check;
+alter table public.email_events add constraint email_events_type_check
+  check (type in ('booking_confirmed', 'booking_cancelled', 'user_registered'));
+
+-- Encola un aviso cuando una alumna completa su perfil (nombre + teléfono).
+create or replace function public.enqueue_registration_email()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email text;
+begin
+  -- Sólo cuando el perfil pasa a estar completo por primera vez.
+  if new.full_name = '' or new.phone_e164 = '' then
+    return new;
+  end if;
+  if tg_op = 'UPDATE' and old.full_name <> '' and old.phone_e164 <> '' then
+    return new; -- ya estaba completo
+  end if;
+  if new.role = 'admin' then
+    return new;
+  end if;
+
+  select email into v_email from auth.users where id = new.id;
+
+  insert into public.email_events (type, payload)
+  values (
+    'user_registered',
+    jsonb_build_object(
+      'student_name',  new.full_name,
+      'student_email', v_email,
+      'student_phone', new.phone_e164,
+      'birth_date',    coalesce(to_char(new.birth_date, 'YYYY-MM-DD'), '')
+    )
+  );
+
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_registration_email_ins on public.profiles;
+create trigger profiles_registration_email_ins
+  after insert on public.profiles
+  for each row execute function public.enqueue_registration_email();
+
+drop trigger if exists profiles_registration_email_upd on public.profiles;
+create trigger profiles_registration_email_upd
+  after update of full_name, phone_e164 on public.profiles
+  for each row execute function public.enqueue_registration_email();
+
+-- -----------------------------------------------------------------------------
+-- messages: chat grupal único ("Sala del clu")
+-- -----------------------------------------------------------------------------
+create table if not exists public.messages (
+  id         bigint generated always as identity primary key,
+  user_id    uuid        not null references public.profiles (id) on delete cascade,
+  body       text        not null check (char_length(body) between 1 and 2000),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists messages_created_idx on public.messages (created_at);
+
+alter table public.messages enable row level security;
+
+-- Cualquier usuaria autenticada con perfil completo lee y escribe en la sala.
+drop policy if exists messages_select_authenticated on public.messages;
+create policy messages_select_authenticated on public.messages
+  for select using (auth.uid() is not null);
+
+drop policy if exists messages_insert_own on public.messages;
+create policy messages_insert_own on public.messages
+  for insert with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.full_name <> '' and p.phone_e164 <> ''
+    )
+  );
+
+-- La autora puede borrar su propio mensaje; la admin puede borrar cualquiera.
+drop policy if exists messages_delete_own_or_admin on public.messages;
+create policy messages_delete_own_or_admin on public.messages
+  for delete using (user_id = auth.uid() or public.is_admin());
+
+-- Realtime
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'messages'
+  ) then
+    alter publication supabase_realtime add table public.messages;
+  end if;
+end $$;
+
+-- Vista para leer mensajes con nombre + avatar de la autora sin exponer otros campos.
+create or replace function public.chat_messages(p_limit integer default 100, p_before bigint default null)
+returns table (
+  id         bigint,
+  user_id    uuid,
+  body       text,
+  created_at timestamptz,
+  author_name   text,
+  author_avatar text
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select m.id, m.user_id, m.body, m.created_at, p.full_name, p.avatar_url
+  from public.messages m
+  join public.profiles p on p.id = m.user_id
+  where auth.uid() is not null
+    and (p_before is null or m.id < p_before)
+  order by m.id desc
+  limit greatest(1, least(p_limit, 200));
+$$;
+
+grant execute on function public.chat_messages(integer, bigint) to authenticated;
+
+-- ==== 20260903150000_roadmap.sql ====
+
+-- =============================================================================
+-- Roadmap: asistencia + pago por "puntito", dashboard, cumpleaños, kits.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- bookings.attended  (lo marca la profe tras la clase)  +  payment <-> booking
+-- -----------------------------------------------------------------------------
+alter table public.bookings  add column if not exists attended boolean;
+alter table public.payments  add column if not exists booking_id uuid
+  references public.bookings (id) on delete set null;
+
+create index if not exists payments_booking_idx on public.payments (booking_id);
+
+-- -----------------------------------------------------------------------------
+-- email_events: nuevos tipos
+-- -----------------------------------------------------------------------------
+alter table public.email_events drop constraint if exists email_events_type_check;
+alter table public.email_events add constraint email_events_type_check
+  check (type in (
+    'booking_confirmed', 'booking_cancelled', 'user_registered',
+    'birthday_month', 'kit_reservation'
+  ));
+
+-- -----------------------------------------------------------------------------
+-- kit_orders  (Reserva tu Kit — sin pasarela de pago)
+-- -----------------------------------------------------------------------------
+create table if not exists public.kit_orders (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid        not null references public.profiles (id) on delete cascade,
+  kit        text        not null check (kit in ('basico', 'medium', 'pro')),
+  quantity   smallint    not null default 1 check (quantity between 1 and 20),
+  note       text,
+  status     text        not null default 'pendiente'
+               check (status in ('pendiente', 'contactada', 'entregada', 'cancelada')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists kit_orders_user_idx on public.kit_orders (user_id, created_at desc);
+
+alter table public.kit_orders enable row level security;
+
+drop policy if exists kit_orders_select_own_or_admin on public.kit_orders;
+create policy kit_orders_select_own_or_admin on public.kit_orders
+  for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists kit_orders_insert_own on public.kit_orders;
+create policy kit_orders_insert_own on public.kit_orders
+  for insert with check (
+    user_id = auth.uid()
+    and exists (select 1 from public.profiles p
+                where p.id = auth.uid() and p.full_name <> '' and p.phone_e164 <> '')
+  );
+
+drop policy if exists kit_orders_admin_update on public.kit_orders;
+create policy kit_orders_admin_update on public.kit_orders
+  for update using (public.is_admin()) with check (public.is_admin());
+
+-- Aviso por email a la profe al reservarse un kit.
+create or replace function public.enqueue_kit_email()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_name  text;
+  v_phone text;
+  v_email text;
+begin
+  select p.full_name, p.phone_e164, u.email
+    into v_name, v_phone, v_email
+    from public.profiles p join auth.users u on u.id = p.id
+   where p.id = new.user_id;
+
+  insert into public.email_events (type, payload)
+  values ('kit_reservation', jsonb_build_object(
+    'student_name', v_name, 'student_phone', v_phone, 'student_email', v_email,
+    'kit', new.kit, 'quantity', new.quantity, 'note', coalesce(new.note, '')
+  ));
+  return new;
+end;
+$$;
+
+drop trigger if exists kit_orders_email on public.kit_orders;
+create trigger kit_orders_email
+  after insert on public.kit_orders
+  for each row execute function public.enqueue_kit_email();
+
+-- -----------------------------------------------------------------------------
+-- admin_set_booking_status()  — marca asistencia y/o pago desde el "puntito"
+-- -----------------------------------------------------------------------------
+drop function if exists public.admin_set_booking_status(uuid, boolean, boolean, numeric, text);
+create or replace function public.admin_set_booking_status(
+  p_booking_id uuid,
+  p_attended   boolean,
+  p_paid       boolean,
+  p_amount     numeric,
+  p_method     text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_b public.bookings;
+begin
+  if not public.is_admin() then
+    raise exception 'not_admin' using errcode = 'P0001';
+  end if;
+
+  select * into v_b from public.bookings where id = p_booking_id;
+  if not found then
+    raise exception 'booking_not_found' using errcode = 'P0001';
+  end if;
+
+  update public.bookings
+     set attended = p_attended,
+         no_show  = case when p_attended is false then true else no_show end
+   where id = p_booking_id;
+
+  if p_paid then
+    if exists (select 1 from public.payments where booking_id = p_booking_id) then
+      update public.payments
+         set amount = p_amount,
+             method = coalesce(nullif(p_method, ''), method)
+       where booking_id = p_booking_id;
+    else
+      insert into public.payments (user_id, slot_id, booking_id, amount, method, created_by)
+      values (v_b.user_id, v_b.slot_id, p_booking_id, p_amount,
+              coalesce(nullif(p_method, ''), 'efectivo'), auth.uid());
+    end if;
+  else
+    delete from public.payments where booking_id = p_booking_id;
+  end if;
+end;
+$$;
+
+grant execute on function public.admin_set_booking_status(uuid, boolean, boolean, numeric, text) to authenticated;
+
+-- -----------------------------------------------------------------------------
+-- admin_students_overview()  — alumnas + sus reservas del período (para "puntitos")
+-- -----------------------------------------------------------------------------
+drop function if exists public.admin_students_overview(date, date);
+create or replace function public.admin_students_overview(p_from date, p_to date)
+returns table (
+  user_id      uuid,
+  full_name    text,
+  email        text,
+  phone_e164   text,
+  birth_date   date,
+  registered_on date,
+  strikes      smallint,
+  blocked      boolean,
+  bookings     jsonb
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not_admin' using errcode = 'P0001';
+  end if;
+
+  return query
+  select
+    p.id, p.full_name, u.email::text, p.phone_e164, p.birth_date,
+    p.created_at::date, p.strikes, p.blocked,
+    coalesce(
+      (select jsonb_agg(jsonb_build_object(
+          'booking_id', b.id,
+          'class_date', to_char(s.class_date, 'YYYY-MM-DD'),
+          'start_time', to_char(s.start_time, 'HH24:MI'),
+          'status',     b.status,
+          'attended',   b.attended,
+          'no_show',    b.no_show,
+          'paid',       (pay.id is not null),
+          'amount',     pay.amount
+        ) order by s.class_date, s.start_time)
+       from public.bookings b
+       join public.availability_slots s on s.id = b.slot_id
+       left join public.payments pay on pay.booking_id = b.id
+       where b.user_id = p.id
+         and b.status = 'confirmed'
+         and s.class_date between p_from and p_to),
+      '[]'::jsonb
+    )
+  from public.profiles p
+  join auth.users u on u.id = p.id
+  where p.role = 'alumna'
+  order by p.full_name;
+end;
+$$;
+
+grant execute on function public.admin_students_overview(date, date) to authenticated;
+
+-- -----------------------------------------------------------------------------
+-- admin_month_totals()  — se agrega "alumnas nuevas del mes"; asistencia por flag
+-- -----------------------------------------------------------------------------
+drop function if exists public.admin_month_totals(date, date);
+create or replace function public.admin_month_totals(p_from date, p_to date)
+returns table (
+  classes_count      bigint,
+  reservations_count bigint,
+  attended_count     bigint,
+  noshow_count       bigint,
+  income_total       numeric,
+  active_students    bigint,
+  new_students       bigint
+)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not_admin' using errcode = 'P0001';
+  end if;
+
+  return query
+  select
+    (select count(*) from public.availability_slots where class_date between p_from and p_to),
+    (select count(*) from public.bookings b join public.availability_slots s on s.id = b.slot_id
+       where s.class_date between p_from and p_to and b.status = 'confirmed'),
+    (select count(*) from public.bookings b join public.availability_slots s on s.id = b.slot_id
+       where s.class_date between p_from and p_to and b.status = 'confirmed' and b.attended is true),
+    (select count(*) from public.bookings b join public.availability_slots s on s.id = b.slot_id
+       where s.class_date between p_from and p_to and b.status = 'confirmed'
+         and (b.no_show is true or b.attended is false)),
+    (select coalesce(sum(amount), 0) from public.payments where paid_on between p_from and p_to),
+    (select count(distinct b.user_id) from public.bookings b join public.availability_slots s on s.id = b.slot_id
+       where s.class_date between p_from and p_to and b.status = 'confirmed'),
+    (select count(*) from public.profiles where role = 'alumna'
+       and created_at::date between p_from and p_to);
+end;
+$$;
+
+grant execute on function public.admin_month_totals(date, date) to authenticated;
+
+-- -----------------------------------------------------------------------------
+-- admin_students_by_month()  — para el gráfico de barras (total de alumnas por mes)
+-- -----------------------------------------------------------------------------
+drop function if exists public.admin_students_by_month(integer);
+create or replace function public.admin_students_by_month(p_months integer default 12)
+returns table (ym text, new_count bigint, cumulative bigint)
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not_admin' using errcode = 'P0001';
+  end if;
+
+  return query
+  with months as (
+    select to_char(d, 'YYYY-MM') as ym, date_trunc('month', d)::date as m0
+    from generate_series(
+      date_trunc('month', (now() at time zone 'Europe/Madrid')) - make_interval(months => greatest(1, p_months) - 1),
+      date_trunc('month', (now() at time zone 'Europe/Madrid')),
+      interval '1 month'
+    ) d
+  ),
+  per_month as (
+    select to_char(date_trunc('month', p.created_at at time zone 'Europe/Madrid'), 'YYYY-MM') as ym,
+           count(*) as c
+    from public.profiles p
+    where p.role = 'alumna'
+    group by 1
+  )
+  select
+    months.ym,
+    coalesce(per_month.c, 0),
+    (select count(*) from public.profiles p2
+      where p2.role = 'alumna'
+        and (p2.created_at at time zone 'Europe/Madrid') < months.m0 + interval '1 month')
+  from months
+  left join per_month on per_month.ym = months.ym
+  order by months.ym;
+end;
+$$;
+
+grant execute on function public.admin_students_by_month(integer) to authenticated;
+
+-- -----------------------------------------------------------------------------
+-- Cumpleaños del mes: aviso a la alumna y a la profe (una vez por mes).
+-- Se dispara desde /api/cron/birthdays (Vercel Cron) al comienzo de cada mes.
+-- -----------------------------------------------------------------------------
+create table if not exists public.birthday_notices (
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  ym      text not null,
+  primary key (user_id, ym)
+);
+alter table public.birthday_notices enable row level security;  -- sin policies: sólo funciones
+
+drop function if exists public.enqueue_birthday_month_notices();
+create or replace function public.enqueue_birthday_month_notices()
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_ym    text := to_char((now() at time zone 'Europe/Madrid'), 'YYYY-MM');
+  v_month int  := extract(month from (now() at time zone 'Europe/Madrid'))::int;
+  r       record;
+  v_count int := 0;
+begin
+  for r in
+    select p.id, p.full_name, u.email
+    from public.profiles p
+    join auth.users u on u.id = p.id
+    where p.role = 'alumna'
+      and p.birth_date is not null
+      and extract(month from p.birth_date)::int = v_month
+      and not exists (select 1 from public.birthday_notices bn
+                      where bn.user_id = p.id and bn.ym = v_ym)
+  loop
+    insert into public.email_events (type, payload)
+    values ('birthday_month', jsonb_build_object(
+      'student_name', r.full_name, 'student_email', r.email, 'month_label', v_ym
+    ));
+    insert into public.birthday_notices (user_id, ym) values (r.id, v_ym);
+    v_count := v_count + 1;
+  end loop;
+
+  return v_count;
+end;
+$$;
+
+grant execute on function public.enqueue_birthday_month_notices() to service_role;
+
+-- -----------------------------------------------------------------------------
+-- birthdays_in_month()  — para marcar cumpleaños en el calendario del admin
+-- -----------------------------------------------------------------------------
+drop function if exists public.birthdays_in_month(integer, integer);
+create or replace function public.birthdays_in_month(p_year integer, p_month integer)
+returns table (day integer, full_name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select extract(day from p.birth_date)::int, p.full_name
+  from public.profiles p
+  where p.role = 'alumna'
+    and p.birth_date is not null
+    and extract(month from p.birth_date)::int = p_month
+    and public.is_admin()
+  order by extract(day from p.birth_date);
+$$;
+
+grant execute on function public.birthdays_in_month(integer, integer) to authenticated;
+
+-- ==== 20260903160000_public_birthdays.sql ====
+
+-- =============================================================================
+-- Cumpleaños visibles para toda la comunidad en el calendario (alumnas + admin).
+-- Se quita el filtro is_admin(): cualquiera autenticada puede ver de quién es
+-- el cumpleaños de cada día.
+-- =============================================================================
+
+drop function if exists public.birthdays_in_month(integer, integer);
+create or replace function public.birthdays_in_month(p_year integer, p_month integer)
+returns table (day integer, full_name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select extract(day from p.birth_date)::int, p.full_name
+  from public.profiles p
+  where p.role = 'alumna'
+    and p.birth_date is not null
+    and extract(month from p.birth_date)::int = p_month
+    and auth.uid() is not null
+  order by extract(day from p.birth_date), p.full_name;
+$$;
+
+grant execute on function public.birthdays_in_month(integer, integer) to authenticated;
+
+-- ==== 20260906120000_fix_email_cast.sql ====
 
 -- =============================================================================
 -- FIX: auth.users.email es varchar(255); las funciones lo devolvían en columnas
@@ -1247,6 +1940,7 @@ begin
 end;
 $$;
 
+-- ==== 20260906130000_news_and_detail.sql ====
 
 -- =============================================================================
 -- 1) "News": la sala de chat pasa a ser un tablón de noticias.
@@ -1422,6 +2116,7 @@ end;
 $$;
 grant execute on function public.admin_student_detail(uuid) to authenticated;
 
+-- ==== 20260906140000_season_and_paid_toggle.sql ====
 
 -- =============================================================================
 -- 1) El gráfico de barras arranca en septiembre 2026 (no "últimos 12 meses").
@@ -1577,6 +2272,7 @@ end;
 $$;
 grant execute on function public.admin_toggle_paid(uuid, boolean, text) to authenticated;
 
+-- ==== 20260906150000_payment_methods.sql ====
 
 -- =============================================================================
 -- Métodos de pago: efectivo · bizum · transferencia.
@@ -1590,6 +2286,7 @@ alter table public.payments drop constraint if exists payments_method_check;
 alter table public.payments add constraint payments_method_check
   check (method in ('efectivo', 'bizum', 'transferencia'));
 
+-- ==== 20260906160000_income_total.sql ====
 
 -- =============================================================================
 -- admin_income_total(): total histórico recaudado (todas las clases cobradas,
@@ -1612,6 +2309,7 @@ end;
 $$;
 grant execute on function public.admin_income_total() to authenticated;
 
+-- ==== 20260906170000_avatars_storage.sql ====
 
 -- =============================================================================
 -- Fotos de perfil:
@@ -1698,6 +2396,7 @@ begin
 end;
 $$;
 
+-- ==== 20260906180000_sin_cobrar.sql ====
 
 -- =============================================================================
 -- Dashboard: "Sin cobrar" = clases confirmadas del mes seleccionado que
@@ -1752,6 +2451,7 @@ end;
 $$;
 grant execute on function public.admin_month_totals(date, date) to authenticated;
 
+-- ==== 20260914120000_security_hardening.sql ====
 
 -- =============================================================================
 -- Endurecimiento de seguridad (auditoría 2026-09-14):
@@ -1876,6 +2576,7 @@ update storage.buckets
        allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'image/gif']
  where id = 'avatars';
 
+-- ==== 20260914130000_fix_email_gateway_key.sql ====
 
 -- =============================================================================
 -- El proyecto pasó al sistema nuevo de API keys de Supabase (publishable/secret,
@@ -1915,6 +2616,7 @@ begin
 end;
 $$;
 
+-- ==== 20260916120000_late_cancel_fee_and_exempt.sql ====
 
 -- =============================================================================
 -- 1) Sanción por baja tardía (<24 h): se cobra la clase completa (10 €) igual.
@@ -2289,6 +2991,7 @@ update public.profiles
  where id = '5dd38d26-d100-4bf6-b35f-57792e3e22bd'  -- Dai Ciaramella
    and role = 'alumna';
 
+-- ==== 20260916130000_kits_editable.sql ====
 
 -- =============================================================================
 -- Kits editables desde el panel de admin (antes hardcodeados en el código).
@@ -2342,6 +3045,7 @@ create trigger kits_touch_updated_at
   before update on public.kits
   for each row execute function public.touch_updated_at();
 
+-- ==== 20260916140000_news_push.sql ====
 
 -- =============================================================================
 -- Notificaciones push al celular cuando se publica una News.
@@ -2408,6 +3112,7 @@ create trigger news_posts_push
   after insert on public.news_posts
   for each row execute function public.dispatch_news_push();
 
+-- ==== 20260917120000_kits_price_photo.sql ====
 
 -- =============================================================================
 -- Kits: precio + foto (antes sólo nombre/bajada/items).
@@ -2439,6 +3144,7 @@ drop policy if exists "kit-photos admin delete" on storage.objects;
 create policy "kit-photos admin delete" on storage.objects
   for delete using (bucket_id = 'kit-photos' and public.is_admin());
 
+-- ==== 20260917130000_monthly_report.sql ====
 
 -- =============================================================================
 -- Reporte mensual por mail a la admin: se dispara desde /api/cron/monthly-report
@@ -2540,6 +3246,7 @@ $$;
 
 grant execute on function public.enqueue_monthly_report() to service_role;
 
+-- ==== 20260918120000_report_v2_and_exempt_penalty.sql ====
 
 -- =============================================================================
 -- 1) La baja <24h marca "penalty_fee" (bolita amarilla) también para alumnas
@@ -2797,6 +3504,7 @@ $$;
 grant execute on function public.enqueue_monthly_report() to service_role;
 -- (email_events ya tiene policy de select para admin desde el schema original.)
 
+-- ==== 20260918130000_report_locale_fix.sql ====
 
 -- =============================================================================
 -- Fix: el reporte mensual salía con el mes en inglés ("September 2026" en vez
@@ -2935,6 +3643,7 @@ $$;
 
 grant execute on function public.enqueue_monthly_report() to service_role;
 
+-- ==== 20260919120000_kit_whatsapp.sql ====
 
 -- =============================================================================
 -- Aviso por WhatsApp a la admin cuando se reserva un kit (además del mail que
@@ -2989,6 +3698,8 @@ drop trigger if exists kit_orders_whatsapp on public.kit_orders;
 create trigger kit_orders_whatsapp
   after insert on public.kit_orders
   for each row execute function public.dispatch_kit_whatsapp();
+
+-- ==== 20260920090000_unify_late_cancel_fee.sql ====
 
 -- =============================================================================
 -- Se elimina la sanción (strike) automática por cancelar tarde.
@@ -3053,6 +3764,8 @@ begin
 end;
 $$;
 
+-- ==== 20260921100000_exempt_attendance_only.sql ====
+
 -- =============================================================================
 -- admin_students_overview() ahora devuelve payment_exempt por alumna, para que
 -- el panel pueda mostrar "Asistió / No asistió" (sin mención de € ni medio de
@@ -3113,6 +3826,8 @@ begin
   order by p.full_name;
 end;
 $$;
+
+-- ==== 20260922090000_admin_birthday_in_calendar.sql ====
 
 -- =============================================================================
 -- birthdays_in_month(): incluye también el cumpleaños de la admin (antes sólo

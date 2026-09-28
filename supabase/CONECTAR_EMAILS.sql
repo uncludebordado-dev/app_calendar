@@ -6,7 +6,7 @@
 -- (private.app_secrets), creada por la migración 20260914120000_security_hardening.sql.
 --
 -- Pasos, EN ESTE ORDEN:
---   1) Correr supabase/APLICAR_AHORA.sql (o al menos la migración de arriba).
+--   1) Correr supabase/ALL_MIGRATIONS.sql (o al menos la migración de arriba).
 --   2) Haber desplegado la Edge Function `send-booking-emails`.
 --   3) Cargarle sus secrets en Supabase (Edge Functions > send-booking-emails >
 --      Secrets): RESEND_API_KEY, RESEND_FROM, ADMIN_EMAIL, EMAIL_WEBHOOK_SECRET.

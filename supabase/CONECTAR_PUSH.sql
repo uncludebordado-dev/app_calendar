@@ -1,5 +1,5 @@
 -- =============================================================================
--- Conectar las notificaciones push de News (después de correr APLICAR_AHORA.sql).
+-- Conectar las notificaciones push de News (después de correr supabase/ALL_MIGRATIONS.sql).
 --
 -- Pasos, EN ESTE ORDEN:
 --   1) Supabase → Edge Functions → Deploy a new function → nombre exacto:
