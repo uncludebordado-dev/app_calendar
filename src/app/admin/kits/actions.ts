@@ -4,10 +4,26 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { isKitId } from "@/lib/kits";
+import type { KitOrder } from "@/types/database.types";
 
 export interface KitActionResult {
   ok: boolean;
   error?: string;
+}
+
+const ORDER_STATUSES: KitOrder["status"][] = ["pendiente", "contactada", "entregada", "cancelada"];
+const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function setKitOrderStatusAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const status = ORDER_STATUSES.find((s) => s === String(formData.get("status") ?? ""));
+  if (!uuidRe.test(id) || !status) return;
+
+  const supabase = await createClient();
+  await supabase.from("kit_orders").update({ status }).eq("id", id);
+  revalidatePath("/admin/kits");
+  revalidatePath("/admin");
 }
 
 export async function updateKitAction(

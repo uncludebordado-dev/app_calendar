@@ -208,6 +208,19 @@ export type KitOrder = {
   created_at: string;
 };
 
+export type AdminKitOrderRow = {
+  id: string;
+  kit: "basico" | "medium" | "pro";
+  quantity: number;
+  note: string | null;
+  status: "pendiente" | "contactada" | "entregada" | "cancelada";
+  created_at: string;
+  user_id: string;
+  full_name: string;
+  phone_e164: string;
+  email: string;
+};
+
 export type AvailabilitySlot = {
   id: string;
   class_date: string; // YYYY-MM-DD
@@ -463,6 +476,10 @@ export type Database = {
       admin_students_overview: {
         Args: { p_from: string; p_to: string };
         Returns: StudentOverviewRow[];
+      };
+      admin_kit_orders: {
+        Args: Record<string, never>;
+        Returns: AdminKitOrderRow[];
       };
       admin_students_by_month: {
         Args: { p_months: number };

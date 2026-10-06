@@ -40,7 +40,7 @@ export default async function AdminDashboardPage({
   const { from, to } = monthRange(year, month);
 
   const supabase = await createClient();
-  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: allPayments }, { data: lastSlot }] =
+  const [{ data: totalsData }, { data: byMonth }, { data: bdays }, { data: allPayments }, { data: lastSlot }, { count: kitsPending }] =
     await Promise.all([
       supabase.rpc("admin_month_totals", { p_from: from, p_to: to }),
       supabase.rpc("admin_students_by_month", { p_months: 12 }),
@@ -54,6 +54,7 @@ export default async function AdminDashboardPage({
         .order("class_date", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase.from("kit_orders").select("id", { count: "exact", head: true }).eq("status", "pendiente"),
     ]);
 
   const t = ((totalsData ?? [])[0] ?? {
@@ -192,15 +193,22 @@ export default async function AdminDashboardPage({
 
       {/* Kits */}
       <section className="card p-4">
-        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">Kits</h2>
+        <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-piedra">
+          Kits
+          {(kitsPending ?? 0) > 0 && (
+            <span className="ml-2 rounded-full bg-ladrillo px-2 py-0.5 align-middle text-[11px] font-semibold normal-case tracking-normal text-white">
+              {kitsPending} pedido{kitsPending === 1 ? "" : "s"} pendiente{kitsPending === 1 ? "" : "s"}
+            </span>
+          )}
+        </h2>
         <p className="mb-3 text-xs text-piedra">
-          Editá el nombre, la bajada y lo que incluye cada kit.
+          Mirá quién pidió cada kit (con teléfono y mail) y editá el nombre y el contenido de cada uno.
         </p>
         <Link
           href="/admin/kits"
           className="inline-flex items-center gap-2 rounded-xl border border-lino px-4 py-2.5 text-sm font-semibold text-piedra-deep hover:bg-lino-soft"
         >
-          Editar kits →
+          Ver pedidos y editar kits →
         </Link>
       </section>
 

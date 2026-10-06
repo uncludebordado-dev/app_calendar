@@ -26,7 +26,7 @@ y, si ves alguno de estos, borralo — ya no los usa nada:
 ## 2. (Opcional) Cargar el SQL actualizado
 
 Si en algún momento necesitás levantar una base nueva desde cero, usá
-`supabase/ALL_MIGRATIONS.sql` — ya está al día con las 29 migraciones.
+`supabase/ALL_MIGRATIONS.sql` — ya está al día con todas las migraciones.
 Para una base que ya está funcionando (como la de producción, hoy) **no
 hace falta correr nada**: todo lo que contiene ya se aplicó, migración por
 migración, durante el trabajo de estas semanas.
