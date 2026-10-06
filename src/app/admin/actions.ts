@@ -141,6 +141,37 @@ export async function deleteSlotAction(formData: FormData): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Eliminar franja desde el calendario (sin redirigir). Sólo si no tiene
+// ninguna reserva; se cuenta en la tabla real, no en el contador booked_count.
+// ---------------------------------------------------------------------------
+export async function deleteSlotInlineAction(id: string): Promise<AdminActionResult> {
+  await requireAdmin();
+  if (!uuidRe.test(id)) return { ok: false, error: "Clase inválida." };
+
+  const supabase = await createClient();
+  const { count, error: countError } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("slot_id", id);
+  if (countError) return { ok: false, error: "No se pudo verificar las inscripciones." };
+  if ((count ?? 0) > 0) {
+    return {
+      ok: false,
+      error: "Esta clase tiene inscripciones. Cancelalas primero o dejá la clase oculta.",
+    };
+  }
+
+  const { error } = await supabase.from("availability_slots").delete().eq("id", id);
+  if (error) return { ok: false, error: "No se pudo eliminar la clase." };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/calendario");
+  revalidatePath("/admin/horarios");
+  revalidatePath("/calendario");
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
 // Publicar / despublicar
 // ---------------------------------------------------------------------------
 export async function togglePublishAction(formData: FormData): Promise<void> {

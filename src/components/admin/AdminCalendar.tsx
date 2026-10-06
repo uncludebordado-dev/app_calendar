@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useMemo, useState } from "react";
+import { startTransition, useActionState, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { buildMonthGrid, MONTH_NAMES_ES, WEEKDAY_LABELS_ES, formatLongDate } from "@/lib/date";
@@ -8,6 +8,11 @@ import { catalanHoliday } from "@/lib/holidays";
 import { createSlotAction, type AdminActionResult } from "@/app/admin/actions";
 import { Alert } from "@/components/ui/Alert";
 import { MAX_CAPACITY } from "@/lib/constants";
+import { TrashIcon } from "@/components/layout/icons";
+import { DeleteSlotSheet } from "./DeleteSlotSheet";
+
+const LONG_PRESS_MS = 500;
+const MOVE_TOLERANCE_PX = 10;
 
 export interface AdminSlot {
   id: string;
@@ -40,6 +45,51 @@ export function AdminCalendar({
   );
   const [state, formAction, pending] = useActionState(createSlotAction, initial);
   const [showForm, setShowForm] = useState(false);
+  const [deleteFor, setDeleteFor] = useState<string | null>(null);
+
+  // Mantener presionado un día (o una clase) abre el panel para eliminarla.
+  const press = useRef<{ timer: ReturnType<typeof setTimeout> | null; fired: boolean; x: number; y: number }>({
+    timer: null,
+    fired: false,
+    x: 0,
+    y: 0,
+  });
+  const cancelPress = () => {
+    if (press.current.timer) clearTimeout(press.current.timer);
+    press.current.timer = null;
+  };
+  function pressProps(dateKey: string) {
+    return {
+      onPointerDown: (e: React.PointerEvent) => {
+        press.current.fired = false;
+        press.current.x = e.clientX;
+        press.current.y = e.clientY;
+        cancelPress();
+        press.current.timer = setTimeout(() => {
+          press.current.fired = true;
+          press.current.timer = null;
+          navigator.vibrate?.(20);
+          setSelected(dateKey);
+          setShowForm(false);
+          setDeleteFor(dateKey);
+        }, LONG_PRESS_MS);
+      },
+      onPointerMove: (e: React.PointerEvent) => {
+        if (Math.hypot(e.clientX - press.current.x, e.clientY - press.current.y) > MOVE_TOLERANCE_PX) cancelPress();
+      },
+      onPointerUp: cancelPress,
+      onPointerLeave: cancelPress,
+      onPointerCancel: cancelPress,
+      onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+      onClickCapture: (e: React.MouseEvent) => {
+        if (press.current.fired) {
+          e.preventDefault();
+          e.stopPropagation();
+          press.current.fired = false;
+        }
+      },
+    };
+  }
 
   function goMonth(delta: number) {
     const d = new Date(Date.UTC(year, month + delta, 1));
@@ -84,8 +134,9 @@ export function AdminCalendar({
                 onClick={() => { setSelected(cell.dateKey); setShowForm(false); }}
                 aria-pressed={isSel}
                 title={holiday ?? undefined}
+                {...(count > 0 ? pressProps(cell.dateKey) : {})}
                 className={[
-                  "relative flex aspect-square flex-col items-center justify-center bg-crema text-sm transition-colors",
+                  "relative flex aspect-square select-none flex-col items-center justify-center bg-crema text-sm transition-colors [-webkit-touch-callout:none]",
                   !cell.inMonth && "text-piedra-soft/40",
                   holiday && "!bg-piedra/15",
                   cell.inMonth && "hover:bg-miel/20",
@@ -108,6 +159,10 @@ export function AdminCalendar({
         <span className="rounded bg-ladrillo px-1 text-[9px] font-semibold text-white">N</span> clases del día ·{" "}
         🎂 cumpleaños · <span className="inline-block h-2.5 w-2.5 align-middle rounded bg-piedra/25" /> festivo
         (Catalunya) · <Link href="/admin/horarios" className="underline">ver lista completa</Link>
+      </p>
+      <p className="px-1 text-xs text-piedra">
+        <TrashIcon className="mr-1 inline h-3.5 w-3.5 align-text-bottom" />
+        Para eliminar una clase, mantené presionado el día (o la clase).
       </p>
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
@@ -134,7 +189,11 @@ export function AdminCalendar({
         ) : (
           <ul className="space-y-2">
             {daySlots.map((s) => (
-              <li key={s.id} className="card flex items-center justify-between p-3 text-sm">
+              <li
+                key={s.id}
+                {...pressProps(selected)}
+                className="card flex select-none items-center justify-between p-3 text-sm [-webkit-touch-callout:none]"
+              >
                 <div>
                   <p className="font-semibold text-piedra-deep">{s.startTime}–{s.endTime} h</p>
                   <p className="text-xs text-piedra">
@@ -148,6 +207,14 @@ export function AdminCalendar({
               </li>
             ))}
           </ul>
+        )}
+
+        {deleteFor && (
+          <DeleteSlotSheet
+            dateKey={deleteFor}
+            slots={(slotsByDay[deleteFor] ?? []).slice().sort((a, b) => a.startTime.localeCompare(b.startTime))}
+            onClose={() => setDeleteFor(null)}
+          />
         )}
 
         {showForm ? (

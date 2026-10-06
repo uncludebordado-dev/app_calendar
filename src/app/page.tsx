@@ -18,7 +18,7 @@ export default async function HomePage() {
   return (
     <main
       data-landing
-      className="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-[2dvh] overflow-hidden px-6 py-[2dvh] text-center [&:has(#faq-list)_.hero]:hidden"
+      className="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-[2dvh] overflow-hidden px-6 py-[2dvh] text-center [&:has(#faq-list)]:pt-[max(3.25rem,calc(env(safe-area-inset-top)+3rem))] [&:has(#faq-list)_.hero]:hidden"
     >
       <LangSwitch className="fixed right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-10" />
 

@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/Button";
 import { useT } from "@/components/i18n/LangProvider";
 import type { Lang } from "@/lib/i18n/config";
 
-type FaqItem = { q: string; a: string[] };
+type FaqItem = { q: string; a: string[]; map?: boolean };
+
+const MAP_QUERY = "Metro El Coll La Teixonera, Barcelona";
+const MAP_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&z=16&output=embed`;
+const MAP_LINK = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MAP_QUERY)}`;
 
 const FAQS: Record<Lang, FaqItem[]> = {
   es: [
@@ -39,6 +43,11 @@ const FAQS: Record<Lang, FaqItem[]> = {
         "Si te anotaste en una clase y no puedes asistir, es necesario cancelarla con al menos 24 horas de anticipación para que el cupo quede libre, de lo contrario, se te cobrará la clase como tomada y deberás abonarla la próxima vez que vengas.",
       ],
     },
+    {
+      q: "¿Dónde está el Clu?",
+      a: ["Estamos muy cerca de la estación de metro Coll La Teixonera, en Barcelona. En el mapa puedes ver la ubicación."],
+      map: true,
+    },
   ],
   ca: [
     {
@@ -70,6 +79,11 @@ const FAQS: Record<Lang, FaqItem[]> = {
       a: [
         "Si t'has apuntat a una classe i no pots assistir-hi, cal cancel·lar-la amb almenys 24 hores d'antelació perquè la plaça quedi lliure; si no, se't cobrarà la classe com a feta i l'hauràs d'abonar la propera vegada que vinguis.",
       ],
+    },
+    {
+      q: "On és el Clu?",
+      a: ["Som molt a prop de l'estació de metro Coll La Teixonera, a Barcelona. Al mapa pots veure la ubicació."],
+      map: true,
     },
   ],
 };
@@ -122,6 +136,26 @@ export function Faq({ ctaClassName = "" }: { ctaClassName?: string }) {
                     {item.a.map((p) => (
                       <p key={p}>{p}</p>
                     ))}
+                    {item.map && (
+                      <>
+                        <iframe
+                          title={item.q}
+                          src={MAP_EMBED}
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          allowFullScreen
+                          className="h-[24dvh] min-h-[150px] w-full rounded-lg border border-lino"
+                        />
+                        <a
+                          href={MAP_LINK}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block font-semibold text-ladrillo-deep underline"
+                        >
+                          {lang === "ca" ? "Obre a Google Maps" : "Abrir en Google Maps"}
+                        </a>
+                      </>
+                    )}
                   </div>
                 )}
               </section>
