@@ -45,8 +45,12 @@ const FAQS: Record<Lang, FaqItem[]> = {
       ],
     },
     {
-      q: "¿Dónde está el Clu?",
-      a: ["Estamos muy cerca de la estación de metro Coll La Teixonera, en Barcelona. En el mapa puedes ver la ubicación."],
+      q: "¿Dónde queda?",
+      a: [
+        "El Clu funciona en el barrio de La Teixonera, en Barcelona (dirección exacta por DM).",
+        "Líneas de metro L5 (El Coll/La Teixonera) y L3 (Vall d’Hebron).",
+        "Líneas de bus H2, 22, 87, 19, 119 y V19.",
+      ],
       map: true,
     },
   ],
@@ -82,8 +86,12 @@ const FAQS: Record<Lang, FaqItem[]> = {
       ],
     },
     {
-      q: "On és el Clu?",
-      a: ["Som molt a prop de l'estació de metro Coll La Teixonera, a Barcelona. Al mapa pots veure la ubicació."],
+      q: "On queda?",
+      a: [
+        "El Clu funciona al barri de La Teixonera, a Barcelona (adreça exacta per DM).",
+        "Línies de metro L5 (El Coll/La Teixonera) i L3 (Vall d’Hebron).",
+        "Línies d'autobús H2, 22, 87, 19, 119 i V19.",
+      ],
       map: true,
     },
   ],
