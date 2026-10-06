@@ -7,9 +7,10 @@ import type { Lang } from "@/lib/i18n/config";
 
 type FaqItem = { q: string; a: string[]; map?: boolean };
 
-const MAP_QUERY = "Metro El Coll La Teixonera, Barcelona";
-const MAP_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&z=16&output=embed`;
-const MAP_LINK = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MAP_QUERY)}`;
+// Pin exacto de "Metro El Coll i La Teixonera" (el mismo del enlace maps.app.goo.gl/5vZKoiT44s4UxDjX8).
+const MAP_LAT_LNG = "41.4209906,2.1502884";
+const MAP_EMBED = `https://www.google.com/maps?q=${MAP_LAT_LNG}&z=18&output=embed`;
+const MAP_LINK = "https://maps.app.goo.gl/5vZKoiT44s4UxDjX8";
 
 const FAQS: Record<Lang, FaqItem[]> = {
   es: [
