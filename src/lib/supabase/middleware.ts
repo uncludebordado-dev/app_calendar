@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/news") ||
     pathname.startsWith("/reserva-kit") ||
     pathname.startsWith("/completar-perfil") ||
+    pathname.startsWith("/aceptar-politica") ||
     pathname.startsWith("/admin");
 
   if (isPrivate && !user) {

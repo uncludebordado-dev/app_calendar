@@ -27,6 +27,8 @@ export type Profile = {
   notifications_enabled: boolean;
   payment_exempt: boolean;
   news_last_seen_at: string | null;
+  privacy_accepted_at: string | null;
+  privacy_version: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -90,7 +92,7 @@ export type PaymentMethod = "efectivo" | "bizum" | "transferencia";
 
 export type Payment = {
   id: string;
-  user_id: string;
+  user_id: string | null;
   slot_id: string | null;
   amount: number | null;
   method: PaymentMethod;
@@ -476,6 +478,14 @@ export type Database = {
       admin_students_overview: {
         Args: { p_from: string; p_to: string };
         Returns: StudentOverviewRow[];
+      };
+      prepare_account_deletion: {
+        Args: { p_user: string };
+        Returns: undefined;
+      };
+      inactive_account_ids: {
+        Args: { p_months: number; p_limit: number };
+        Returns: { user_id: string }[];
       };
       admin_kit_orders: {
         Args: Record<string, never>;

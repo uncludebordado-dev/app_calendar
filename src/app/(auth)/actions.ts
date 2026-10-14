@@ -3,8 +3,15 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { signupSchema, loginSchema, completeProfileSchema } from "@/lib/validation/auth";
+import {
+  signupSchema,
+  loginSchema,
+  completeProfileSchema,
+  acceptTermsSchema,
+} from "@/lib/validation/auth";
 import { ROUTES } from "@/lib/constants";
+import { PRIVACY_VERSION } from "@/lib/legal";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface ActionResult {
   ok: boolean;
@@ -32,6 +39,7 @@ export async function signUpAction(_prev: ActionResult, formData: FormData): Pro
     birthDate: formData.get("birthDate"),
     email: formData.get("email"),
     password: formData.get("password"),
+    acceptTerms: formData.get("acceptTerms"),
   });
 
   if (!parsed.success) {
@@ -60,6 +68,18 @@ export async function signUpAction(_prev: ActionResult, formData: FormData): Pro
       ? "Ese email ya tiene una cuenta. Iniciá sesión."
       : "No pudimos crear la cuenta. Revisá los datos e intentá de nuevo.";
     return { ok: false, error: msg };
+  }
+
+  // Guardamos cuándo aceptó la política (aunque aún deba confirmar el email).
+  if (data.user) {
+    try {
+      await createAdminClient()
+        .from("profiles")
+        .update({ privacy_accepted_at: new Date().toISOString(), privacy_version: PRIVACY_VERSION })
+        .eq("id", data.user.id);
+    } catch {
+      /* si falla, la pantalla de aceptación se lo pedirá al entrar */
+    }
   }
 
   if (!data.session) {
@@ -144,6 +164,33 @@ export async function completeProfileAction(
   if (error) {
     return { ok: false, error: "No pudimos guardar tus datos. Intentá de nuevo." };
   }
+
+  redirect(safeNext(formData.get("next")));
+}
+
+// ---------------------------------------------------------------------------
+// Aceptar la política de privacidad (quien aún no la aceptó)
+// ---------------------------------------------------------------------------
+export async function acceptPolicyAction(
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const check = acceptTermsSchema.safeParse(formData.get("acceptTerms"));
+  if (!check.success) {
+    return { ok: false, error: check.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Sesión expirada. Volvé a iniciar sesión." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ privacy_accepted_at: new Date().toISOString(), privacy_version: PRIVACY_VERSION })
+    .eq("id", user.id);
+  if (error) return { ok: false, error: "No pudimos guardar tu aceptación. Intentá de nuevo." };
 
   redirect(safeNext(formData.get("next")));
 }

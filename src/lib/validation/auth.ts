@@ -74,12 +74,36 @@ export const birthDateSchema = z
   })
   .transform((v) => (v ? v : null));
 
-/** Fecha de nacimiento obligatoria (registro). */
+/** Fecha de nacimiento obligatoria y mayor de 18 años (registro). */
 export const birthDateRequiredSchema = z
   .string()
   .trim()
   .min(1, "Ingresá tu fecha de nacimiento")
-  .superRefine(checkBirthDate);
+  .superRefine((value, ctx) => {
+    checkBirthDate(value, ctx);
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return;
+    const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+    const now = new Date();
+    let age = now.getUTCFullYear() - y;
+    if (now.getUTCMonth() + 1 < mo || (now.getUTCMonth() + 1 === mo && now.getUTCDate() < d)) age -= 1;
+    if (age < 18) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Tenés que ser mayor de 18 años para crear una cuenta.",
+      });
+    }
+  });
+
+/** Casilla "soy mayor de 18 y acepto la política de privacidad". */
+export const acceptTermsSchema = z.preprocess(
+  (v) => v === true || v === "on" || v === "true",
+  z.literal(true, {
+    errorMap: () => ({
+      message: "Tenés que confirmar que sos mayor de 18 y aceptar la política de privacidad.",
+    }),
+  }),
+);
 
 export const signupSchema = z
   .object({
@@ -88,6 +112,7 @@ export const signupSchema = z
     birthDate: birthDateRequiredSchema,
     email: emailSchema,
     password: passwordSchema,
+    acceptTerms: acceptTermsSchema,
   })
   .strict();
 

@@ -263,4 +263,36 @@ export const CA: Record<string, string> = {
     "Ja n'estem al corrent. Pots tornar-ho a provar o tornar a l'inici.",
   "Reintentar": "Torna-ho a provar",
   "Ir al inicio": "Vés a l'inici",
+
+  // --- Protección de datos ---
+  "Antes de seguir": "Abans de continuar",
+  "Para usar la aplicación necesitamos que confirmes lo siguiente.": "Per fer servir l'aplicació necessitem que confirmis el següent.",
+  "Aceptar y continuar": "Accepta i continua",
+  "Soy mayor de 18 años y acepto la": "Sóc major de 18 anys i accepto la",
+  "Política de privacidad": "Política de privacitat",
+  "y los": "i els",
+  "Términos de uso": "Termes d'ús",
+  "Cookies": "Galetes",
+  "Privacidad": "Privacitat",
+  "Términos": "Termes",
+  "Mis datos": "Les meves dades",
+  "Descargar mis datos": "Descarrega les meves dades",
+  "Un archivo con todo lo que guardamos de vos: perfil, reservas, pedidos y cobros.":
+    "Un fitxer amb tot el que guardem de tu: perfil, reserves, comandes i cobraments.",
+  "Descargar": "Descarrega",
+  "Eliminar mi cuenta": "Elimina el meu compte",
+  "Se borran tu perfil, reservas, pedidos y foto. Los registros de cobro quedan sin tu nombre. No se puede deshacer.":
+    "S'esborren el teu perfil, reserves, comandes i foto. Els registres de cobrament queden sense el teu nom. No es pot desfer.",
+  "Escribí {word} para confirmar": "Escriu {word} per confirmar",
+  "Eliminar definitivamente": "Elimina definitivament",
+  "Tenés que ser mayor de 18 años para crear una cuenta.": "Has de ser major de 18 anys per crear un compte.",
+  "Tenés que confirmar que sos mayor de 18 y aceptar la política de privacidad.":
+    "Has de confirmar que ets major de 18 anys i acceptar la política de privacitat.",
+  "No pudimos guardar tu aceptación. Intentá de nuevo.": "No hem pogut desar la teva acceptació. Torna-ho a intentar.",
+  "Escribí ELIMINAR para confirmar.": "Escriu ELIMINAR per confirmar.",
+  "No encontramos tu perfil.": "No trobem el teu perfil.",
+  "La cuenta de administración no se puede eliminar desde acá.": "El compte d'administració no es pot eliminar des d'aquí.",
+  "Demasiados intentos. Probá más tarde.": "Massa intents. Torna-ho a provar més tard.",
+  "No pudimos eliminar la cuenta. Escribinos y lo resolvemos.": "No hem pogut eliminar el compte. Escriu-nos i ho resolem.",
+  "No se pudo eliminar la cuenta.": "No s'ha pogut eliminar el compte.",
 };

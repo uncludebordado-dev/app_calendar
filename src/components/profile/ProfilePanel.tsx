@@ -7,6 +7,9 @@ import { Alert } from "@/components/ui/Alert";
 import { signOutAction } from "@/app/(auth)/actions";
 import type { Profile } from "@/types/database.types";
 import { LangSwitch } from "@/components/i18n/LangSwitch";
+import { MyData } from "@/components/profile/MyData";
+import Link from "next/link";
+import { ROUTES } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -77,6 +80,18 @@ export async function ProfilePanel({
           <LangSwitch />
         </Section>
       )}
+
+      {!isAdmin && (
+        <Section title={t("Mis datos")}>
+          <MyData />
+        </Section>
+      )}
+
+      <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-piedra">
+        <Link href={ROUTES.privacidad} className="underline">{t("Política de privacidad")}</Link>
+        <Link href={ROUTES.terminos} className="underline">{t("Términos de uso")}</Link>
+        <Link href={ROUTES.cookies} className="underline">{t("Cookies")}</Link>
+      </p>
 
       {extra}
 

@@ -15,6 +15,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(`${ROUTES.completarPerfil}?next=${encodeURIComponent(ROUTES.calendario)}`);
   }
 
+  // Quien aún no aceptó la política la acepta antes de seguir (solo alumnas;
+  // si la columna todavía no existe en la base, no se exige).
+  if (
+    profile.role !== "admin" &&
+    "privacy_accepted_at" in profile &&
+    !profile.privacy_accepted_at
+  ) {
+    redirect(ROUTES.aceptarPolitica);
+  }
+
   const supabase = await createClient();
   const newsUnread = await hasUnreadNews(supabase, profile);
 

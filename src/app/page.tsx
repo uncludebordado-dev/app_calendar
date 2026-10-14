@@ -5,6 +5,7 @@ import { StitchDivider } from "@/components/layout/StitchDivider";
 import { Faq } from "@/components/landing/Faq";
 import { LangSwitch } from "@/components/i18n/LangSwitch";
 import { getT } from "@/lib/i18n/server";
+import Link from "next/link";
 import { INSTAGRAM_URL, ROUTES } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -50,9 +51,14 @@ export default async function HomePage() {
         <Faq ctaClassName={CTA} />
       </div>
 
-      <p className="shrink-0 text-[clamp(10px,1.5dvh,12px)] text-piedra-soft">
-        @uncludebordado · Barcelona
-      </p>
+      <div className="shrink-0 text-[clamp(10px,1.5dvh,12px)] text-piedra-soft">
+        <p>@uncludebordado · Barcelona</p>
+        <p className="mt-0.5 flex justify-center gap-3">
+          <Link href={ROUTES.privacidad} className="underline">{t("Privacidad")}</Link>
+          <Link href={ROUTES.terminos} className="underline">{t("Términos")}</Link>
+          <Link href={ROUTES.cookies} className="underline">{t("Cookies")}</Link>
+        </p>
+      </div>
     </main>
   );
 }

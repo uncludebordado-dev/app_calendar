@@ -30,6 +30,7 @@ export const RATE_LIMITS = {
   booking: { max: 12, windowSeconds: 60 * 60 }, // 12 reservas o intentos / hora / usuaria
   cancel: { max: 12, windowSeconds: 60 * 60 }, // 12 cancelaciones / hora / usuaria
   kit: { max: 6, windowSeconds: 60 * 60 }, // 6 pedidos de kit / hora / usuaria
+  deleteAccount: { max: 3, windowSeconds: 60 * 60 }, // 3 intentos de eliminar cuenta / hora / usuaria
 } as const;
 
 /**
@@ -50,6 +51,10 @@ export const ROUTES = {
   registro: "/registro",
   completarPerfil: "/completar-perfil",
   calendario: "/calendario",
+  aceptarPolitica: "/aceptar-politica",
+  privacidad: "/privacidad",
+  terminos: "/terminos",
+  cookies: "/cookies",
   misReservas: "/mis-reservas",
   miPerfil: "/mi-perfil",
   admin: "/admin",

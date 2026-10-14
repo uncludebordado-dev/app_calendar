@@ -166,6 +166,12 @@ supabase functions deploy send-news-push
 - `bookings` no acepta INSERT/UPDATE directos: todo pasa por funciones
   `SECURITY DEFINER` (`book_slot`, `cancel_booking`, etc.) con validación
   server-side.
+- **Protección de datos (RGPD)**: política de privacidad, términos y cookies
+  publicados (`/privacidad`, `/terminos`, `/cookies`); aceptación y mayoría
+  de edad registradas; **descarga** de datos y **eliminación de cuenta** desde
+  Mi perfil (los cobros quedan anonimizados); anonimización automática de
+  cuentas con 24 meses sin actividad (`/api/cron/inactive-accounts`). Lo que va
+  fuera del código está en `docs/7-Proteccion-de-datos-fuera-del-codigo.md`.
 - **Rate limiting** en Postgres para login, registro, reservar, cancelar y
   pedir un kit (por IP o por usuaria según el caso).
 - **Sin secretos en el cliente ni en git**: `service_role`, claves de Resend,
