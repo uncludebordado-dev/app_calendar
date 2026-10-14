@@ -45,7 +45,7 @@ function Es() {
       <h2>3. Para qué los usamos y con qué base</h2>
       <ul>
         <li><strong>Gestionar tu cuenta, tus reservas, cobros y kits</strong> — necesario para prestarte el servicio que solicitas.</li>
-        <li><strong>Comprobar tu mayoría de edad y saludarte por tu cumpleaños</strong> — necesario para el servicio y, en lo que se muestra a otras alumnas, con tu consentimiento.</li>
+        <li><strong>Comprobar tu mayoría de edad y saludarte por tu cumpleaños</strong> — necesario para el servicio. Que tu nombre y el día de tu cumpleaños se vean en el calendario forma parte del club y lo aceptas al aceptar esta política.</li>
         <li><strong>Avisarte de novedades</strong> — con tu consentimiento (notificaciones) o como parte del servicio.</li>
         <li><strong>Seguridad y prevención de abusos</strong> — interés legítimo en proteger la aplicación y a las usuarias.</li>
         <li><strong>Contabilidad y obligaciones fiscales</strong> — obligación legal sobre los registros de cobro.</li>
@@ -138,7 +138,7 @@ function Ca() {
       <h2>3. Per a què les fem servir i amb quina base</h2>
       <ul>
         <li><strong>Gestionar el teu compte, les reserves, els cobraments i els kits</strong> — necessari per prestar-te el servei que sol·licites.</li>
-        <li><strong>Comprovar que ets major d&apos;edat i felicitar-te pel teu aniversari</strong> — necessari per al servei i, pel que es mostra a la resta d&apos;alumnes, amb el teu consentiment.</li>
+        <li><strong>Comprovar que ets major d&apos;edat i felicitar-te pel teu aniversari</strong> — necessari per al servei. Que el teu nom i el dia del teu aniversari es vegin al calendari forma part del club i ho acceptes en acceptar aquesta política.</li>
         <li><strong>Avisar-te de novetats</strong> — amb el teu consentiment (notificacions) o com a part del servei.</li>
         <li><strong>Seguretat i prevenció d&apos;abusos</strong> — interès legítim a protegir l&apos;aplicació i les usuàries.</li>
         <li><strong>Comptabilitat i obligacions fiscals</strong> — obligació legal sobre els registres de cobrament.</li>

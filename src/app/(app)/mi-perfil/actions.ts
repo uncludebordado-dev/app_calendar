@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { purgeAccount } from "@/lib/account";
+import { isDeletePhrase } from "@/lib/account-confirm";
 
 export async function setNotificationsAction(enabled: boolean): Promise<{ ok: boolean }> {
   const supabase = await createClient();
@@ -27,8 +28,8 @@ export async function setNotificationsAction(enabled: boolean): Promise<{ ok: bo
 export async function deleteMyAccountAction(
   confirm: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  if (confirm.trim().toUpperCase() !== "ELIMINAR") {
-    return { ok: false, error: "Escribí ELIMINAR para confirmar." };
+  if (!isDeletePhrase(confirm)) {
+    return { ok: false, error: "Escribí la frase de confirmación tal como se indica." };
   }
 
   const supabase = await createClient();
