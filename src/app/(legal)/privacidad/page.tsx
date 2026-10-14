@@ -15,8 +15,8 @@ export default function PrivacidadPage() {
 
       <h2>1. Quién es la responsable</h2>
       <ul>
-        <li><strong>Responsable:</strong> {LEGAL.owner}</li>
-        <li><strong>NIF/CIF:</strong> {LEGAL.nif}</li>
+        <li><strong>Responsable:</strong> {LEGAL.owner}, que opera bajo el nombre comercial «{LEGAL.brand}»</li>
+        <li><strong>NIF:</strong> {LEGAL.nif}</li>
         <li><strong>Domicilio:</strong> {LEGAL.address}</li>
         <li><strong>Contacto para temas de datos:</strong> <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li>
       </ul>

@@ -41,7 +41,7 @@ export default function TerminosPage() {
       <p>Podemos actualizar estos términos; si el cambio es relevante, te lo avisaremos. Se rigen por la ley española.</p>
 
       <h2>8. Contacto</h2>
-      <p><strong>{LEGAL.owner}</strong> — <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></p>
+      <p><strong>{LEGAL.owner}</strong> (nombre comercial «{LEGAL.brand}») — <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></p>
     </>
   );
 }

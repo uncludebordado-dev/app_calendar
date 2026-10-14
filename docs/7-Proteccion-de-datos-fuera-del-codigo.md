@@ -16,7 +16,8 @@ Los textos legales de la app tienen marcadores `[COMPLETAR…]`.
 3. Cambia `updated` a la fecha de hoy si modificas algo.
 4. Pide a Claude Code que publique el cambio, o hazlo en GitHub.
 
-> Si eres autónoma, el responsable eres tú con tu NIF. Si tienes sociedad, la razón social y su CIF.
+> «Un clu de bordado» es un **nombre comercial**, no una persona jurídica: el responsable legal es la persona titular que está detrás (tú, con tu DNI o NIE, que es tu NIF). Si algún día hay sociedad, se pone la razón social y su CIF.
+> Si todavía no estás dada de alta para la actividad, consúltalo con una gestoría: afecta a lo fiscal, no solo a esta política.
 
 ## 2. Cuentas: verificación en dos pasos (20 min)
 
