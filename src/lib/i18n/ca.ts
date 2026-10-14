@@ -295,4 +295,13 @@ export const CA: Record<string, string> = {
   "Demasiados intentos. Probá más tarde.": "Massa intents. Torna-ho a provar més tard.",
   "No pudimos eliminar la cuenta. Escribinos y lo resolvemos.": "No hem pogut eliminar el compte. Escriu-nos i ho resolem.",
   "No se pudo eliminar la cuenta.": "No s'ha pogut eliminar el compte.",
+  "Cuidamos tus datos. Para usar la aplicación necesitamos que confirmes lo siguiente.":
+    "Tenim cura de les teves dades. Per fer servir l'aplicació necessitem que confirmis el següent.",
+  "La aplicación es solo para mayores de 18 años.": "L'aplicació és només per a majors de 18 anys.",
+  "Guardamos tus datos para gestionar tus reservas y cobros.": "Guardem les teves dades per gestionar les teves reserves i cobraments.",
+  "Puedes descargar o eliminar tus datos cuando quieras desde Mi perfil.":
+    "Pots descarregar o eliminar les teves dades quan vulguis des del teu perfil.",
+  "Soy mayor de 18 años y acepto": "Sóc major de 18 anys i accepto",
+  "Salir": "Surt",
+  "Al continuar verás nuestra": "En continuar veuràs la nostra",
 };

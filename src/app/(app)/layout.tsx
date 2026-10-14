@@ -5,6 +5,7 @@ import { AppLock } from "@/components/security/AppLock";
 import { getProfile, profileIsComplete } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { hasUnreadNews } from "@/lib/news";
+import { PrivacyModal } from "@/components/auth/PrivacyModal";
 import { ROUTES } from "@/lib/constants";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,21 +16,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect(`${ROUTES.completarPerfil}?next=${encodeURIComponent(ROUTES.calendario)}`);
   }
 
-  // Quien aún no aceptó la política la acepta antes de seguir (solo alumnas;
-  // si la columna todavía no existe en la base, no se exige).
-  if (
+  // Ventana de aceptación: una sola vez por alumna (si la columna todavía no
+  // existe en la base, no se muestra).
+  const needsPrivacy =
     profile.role !== "admin" &&
     "privacy_accepted_at" in profile &&
-    !profile.privacy_accepted_at
-  ) {
-    redirect(ROUTES.aceptarPolitica);
-  }
+    !profile.privacy_accepted_at;
 
   const supabase = await createClient();
   const newsUnread = await hasUnreadNews(supabase, profile);
 
   return (
     <div className="min-h-dvh pb-28">
+      {needsPrivacy && <PrivacyModal />}
       <AppLock />
       <AppHeader />
       <main className="mx-auto max-w-md px-4 py-5">{children}</main>

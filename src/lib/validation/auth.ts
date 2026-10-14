@@ -112,7 +112,6 @@ export const signupSchema = z
     birthDate: birthDateRequiredSchema,
     email: emailSchema,
     password: passwordSchema,
-    acceptTerms: acceptTermsSchema,
   })
   .strict();
 

@@ -51,7 +51,6 @@ export const ROUTES = {
   registro: "/registro",
   completarPerfil: "/completar-perfil",
   calendario: "/calendario",
-  aceptarPolitica: "/aceptar-politica",
   privacidad: "/privacidad",
   terminos: "/terminos",
   cookies: "/cookies",

@@ -111,39 +111,22 @@ export function SignupForm({ next }: { next?: string }) {
           {...register("password")}
         />
 
-        <div>
-          <label className="flex items-start gap-2.5 text-sm text-piedra">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-5 w-5 shrink-0 rounded border-lino accent-[rgb(var(--accent))]"
-              aria-invalid={errors.acceptTerms ? "true" : undefined}
-              {...register("acceptTerms")}
-            />
-            <span>
-              {t("Soy mayor de 18 años y acepto la")}{" "}
-              <Link href={ROUTES.privacidad} target="_blank" className="font-semibold text-ladrillo-deep underline">
-                {t("Política de privacidad")}
-              </Link>{" "}
-              {t("y los")}{" "}
-              <Link href={ROUTES.terminos} target="_blank" className="font-semibold text-ladrillo-deep underline">
-                {t("Términos de uso")}
-              </Link>
-              .
-            </span>
-          </label>
-          {errors.acceptTerms && (
-            <p role="alert" className="field-error">
-              <span aria-hidden>⚠</span>
-              <span>{t(String(errors.acceptTerms.message))}</span>
-            </p>
-          )}
-        </div>
-
         {state.error && <Alert tone="error">{state.error}</Alert>}
 
         <Button type="submit" fullWidth size="lg" loading={pending}>
           {t("Crear cuenta")}
         </Button>
+        <p className="text-center text-xs text-piedra">
+          {t("Al continuar verás nuestra")}{" "}
+          <Link href={ROUTES.privacidad} target="_blank" className="font-semibold underline">
+            {t("Política de privacidad")}
+          </Link>{" "}
+          {t("y los")}{" "}
+          <Link href={ROUTES.terminos} target="_blank" className="font-semibold underline">
+            {t("Términos de uso")}
+          </Link>
+          .
+        </p>
       </form>
 
       <p className="text-center text-sm text-piedra">
