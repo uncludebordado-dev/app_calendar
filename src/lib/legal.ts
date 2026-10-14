@@ -10,5 +10,6 @@ export const LEGAL = {
   address: "(...)",
   email: "uncludebordado@gmail.com",
   updated: "14 de octubre de 2026",
+  updatedCa: "14 d'octubre de 2026",
   retentionMonths: 24,
 } as const;

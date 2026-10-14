@@ -304,4 +304,5 @@ export const CA: Record<string, string> = {
   "Soy mayor de 18 años y acepto": "Sóc major de 18 anys i accepto",
   "Salir": "Surt",
   "Al continuar verás nuestra": "En continuar veuràs la nostra",
+  "← Volver": "← Torna",
 };
