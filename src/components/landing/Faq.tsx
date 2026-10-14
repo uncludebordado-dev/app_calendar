@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useT } from "@/components/i18n/LangProvider";
 import type { Lang } from "@/lib/i18n/config";
@@ -102,6 +102,13 @@ export function Faq({ ctaClassName = "" }: { ctaClassName?: string }) {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<number | null>(null);
   const items = FAQS[lang];
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+
+  // Al abrir una respuesta, se desplaza la lista para que se vea completa.
+  useEffect(() => {
+    if (current === null) return;
+    sectionRefs.current[current]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [current]);
 
   return (
     <>
@@ -124,16 +131,18 @@ export function Faq({ ctaClassName = "" }: { ctaClassName?: string }) {
       {open && (
         <div
           id="faq-list"
-          data-expanded={current !== null ? "true" : undefined}
           className="min-h-0 space-y-2 overflow-y-auto overflow-x-hidden overscroll-contain text-left [-webkit-overflow-scrolling:touch]"
         >
           {items.map((item, i) => {
             const expanded = current === i;
-            // Con una pregunta abierta se muestran sólo ella: con letra más grande,
-            // así la respuesta entra en pantalla sin tener que desplazarse.
-            if (current !== null && !expanded) return null;
             return (
-              <section key={item.q} className="card px-4 py-1">
+              <section
+                key={item.q}
+                ref={(el) => {
+                  sectionRefs.current[i] = el;
+                }}
+                className="card px-4 py-1"
+              >
                 <h2 className="text-base font-semibold leading-snug text-piedra-deep">
                   <button
                     type="button"
