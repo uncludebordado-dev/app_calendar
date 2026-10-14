@@ -122,26 +122,33 @@ export function Faq({ ctaClassName = "" }: { ctaClassName?: string }) {
       </Button>
 
       {open && (
-        <div id="faq-list" className="min-h-0 space-y-[1dvh] overflow-y-auto overflow-x-hidden text-left">
+        <div
+          id="faq-list"
+          data-expanded={current !== null ? "true" : undefined}
+          className="min-h-0 space-y-2 overflow-y-auto overflow-x-hidden overscroll-contain text-left [-webkit-overflow-scrolling:touch]"
+        >
           {items.map((item, i) => {
             const expanded = current === i;
+            // Con una pregunta abierta se muestran sólo ella: con letra más grande,
+            // así la respuesta entra en pantalla sin tener que desplazarse.
+            if (current !== null && !expanded) return null;
             return (
-              <section key={item.q} className="card px-3.5 py-[1.2dvh]">
-                <h2 className="text-[clamp(12px,1.9dvh,14px)] font-semibold text-piedra-deep">
+              <section key={item.q} className="card px-4 py-1">
+                <h2 className="text-base font-semibold leading-snug text-piedra-deep">
                   <button
                     type="button"
                     aria-expanded={expanded}
                     onClick={() => setCurrent(expanded ? null : i)}
-                    className="flex w-full items-center justify-between gap-3 text-left"
+                    className="flex min-h-[48px] w-full touch-manipulation items-center justify-between gap-3 py-2 text-left [-webkit-tap-highlight-color:transparent]"
                   >
                     <span>{item.q}</span>
-                    <span aria-hidden className="shrink-0 text-piedra">
+                    <span aria-hidden className="shrink-0 text-xl leading-none text-piedra">
                       {expanded ? "−" : "+"}
                     </span>
                   </button>
                 </h2>
                 {expanded && (
-                  <div className="mt-[0.8dvh] space-y-[0.8dvh] text-[clamp(11px,1.7dvh,13px)] leading-snug text-piedra">
+                  <div className="space-y-3 pb-3 pt-1 text-[15px] leading-relaxed text-piedra">
                     {item.a.map((p) => (
                       <p key={p}>{p}</p>
                     ))}
@@ -153,13 +160,13 @@ export function Faq({ ctaClassName = "" }: { ctaClassName?: string }) {
                           loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
                           allowFullScreen
-                          className="h-[24dvh] min-h-[150px] w-full rounded-lg border border-lino"
+                          className="h-[26dvh] max-h-[260px] min-h-[120px] w-full rounded-lg border border-lino"
                         />
                         <a
                           href={MAP_LINK}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block font-semibold text-ladrillo-deep underline"
+                          className="inline-flex min-h-[44px] items-center font-semibold text-ladrillo-deep underline"
                         >
                           {lang === "ca" ? "Obre a Google Maps" : "Abrir en Google Maps"}
                         </a>

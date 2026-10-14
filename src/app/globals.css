@@ -111,3 +111,8 @@ body:has([data-landing]) {
     display: none;
   }
 }
+
+/* Con una respuesta abierta se ocultan los otros botones: la respuesta usa toda la pantalla. */
+main[data-landing]:has(#faq-list[data-expanded]) .cta-secondary {
+  display: none;
+}
